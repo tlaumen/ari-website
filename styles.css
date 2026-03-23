@@ -125,9 +125,9 @@ body {
     font-size: clamp(1.2rem, 3vw, 2rem);
     font-weight: bold;
     text-decoration: none;
-    color: var(--text-primary);
-    background-color: var(--deep-black);
-    border: 2px solid var(--text-primary);
+    color: var(--deep-black);
+    background-color: var(--text-bright);
+    border: 2px solid var(--text-bright);
     box-shadow: 0 0 15px var(--glow-color);
     opacity: 0;
     animation: showButton 0.1s ease-out 3.2s forwards;
@@ -166,8 +166,8 @@ body {
 }
 
 .contact-btn:hover {
-    background-color: var(--text-primary);
-    color: var(--deep-black);
+    background-color: var(--deep-black);
+    color: var(--text-bright);
     box-shadow: 0 0 30px var(--glow-color);
 }
 
