@@ -26,10 +26,9 @@
    ██║  ██║██║  ██║██║
    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝
             </pre>
-            <div class="tagline-container">
-                <span class="tagline-typer">
-                    <span class="tagline-text">Infrastructuur is van alle tijden. Onze aanpak niet.</span>
-                </span>
+            <div class="tagline-container" data-text="Infrastructuur is van alle tijden. Onze aanpak niet.">
+                <span class="tagline-typer"></span>
+                <span class="tagline-cursor"></span>
             </div>
         </div>
     </section>
@@ -52,5 +51,27 @@
             </a>
         </div>
     </footer>
+    <script>
+        (function() {
+            const container = document.querySelector('.tagline-container');
+            const typer = document.querySelector('.tagline-typer');
+            const cursor = document.querySelector('.tagline-cursor');
+            const text = container.dataset.text;
+            const charDelay = 65;
+            const totalDelay = text.length * charDelay + 500;
+
+            text.split('').forEach((char, i) => {
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.textContent = char;
+                span.style.animationDelay = (i * charDelay) + 'ms';
+                typer.appendChild(span);
+            });
+
+            setTimeout(() => {
+                cursor.classList.add('visible');
+            }, totalDelay);
+        })();
+    </script>
 </body>
 </html>

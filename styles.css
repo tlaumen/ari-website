@@ -86,25 +86,27 @@ body {
 
 .tagline-typer {
     display: inline-flex;
-    overflow: hidden;
-    white-space: nowrap;
-    width: 0;
-    animation: typeTagline 2.5s steps(38) 0.5s forwards;
+    flex-wrap: wrap;
 }
 
-.tagline-text {
-    display: inline;
+.char {
+    opacity: 0;
+    white-space: pre;
+    animation: charAppear 0.05s ease-out forwards;
 }
 
 .tagline-cursor {
     display: inline-block;
+    opacity: 0;
     color: var(--text-bright);
+}
+
+.tagline-cursor.visible {
     animation: blink 0.8s step-end infinite;
 }
 
-@keyframes typeTagline {
-    from { width: 0; }
-    to { width: 100%; }
+@keyframes charAppear {
+    to { opacity: 1; }
 }
 
 /* CTA Section */
@@ -130,7 +132,7 @@ body {
     border: 2px solid var(--text-bright);
     box-shadow: 0 0 15px var(--glow-color);
     opacity: 0;
-    animation: showButton 0.1s ease-out 3.2s forwards;
+    animation: showButton 0.1s ease-out 3.6s forwards;
     position: relative;
 }
 
@@ -139,7 +141,7 @@ body {
     overflow: hidden;
     white-space: nowrap;
     width: 0;
-    animation: typeButton 1.4s steps(11) 3.3s forwards;
+    animation: typeButton 1.4s steps(11) 3.7s forwards;
 }
 
 .btn-text {
@@ -239,6 +241,10 @@ footer {
 
 /* Responsive */
 @media (max-width: 480px) {
+    .tagline-typer {
+        white-space: normal;
+    }
+
     .footer-content {
         flex-direction: column;
         text-align: center;
