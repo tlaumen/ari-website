@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zinnige AI oplossingen voor civiel ingenieurs - ouverture</title>
+  <style>
+    :root {
+      --text-primary: #F0F0F0;
+      --text-bright:  #FFFFFF;
+      --deep-black:   #0A0A0A;
+      --glow-color:   rgba(240, 240, 240, 0.3);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', Courier, 'Lucida Console', Monaco, monospace;
+      background-color: var(--deep-black);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .blog {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+    .tag {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      opacity: 0.45;
+      margin-bottom: 1.75rem;
+      display: block;
+    }
+    .tag::before { content: '// '; }
+    .blog-title {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text-bright);
+      text-shadow: 0 0 10px var(--glow-color);
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      opacity: 0.4;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(240,240,240,0.08);
+      letter-spacing: 0.04em;
+    }
+    .meta-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      opacity: 0.4;
+    }
+    /* ── Body content ── */
+    .blog-body { margin-top: 2rem; }
+    .blog-body p {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--text-primary);
+      opacity: 0.7;
+      margin-bottom: 1.25rem;
+    }
+    .blog-body h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-bright);
+      text-shadow: 0 0 8px rgba(240,240,240,0.2);
+      letter-spacing: 0.02em;
+      margin: 2rem 0 0.45rem;
+      counter-increment: section;
+    }
+    .blog-body h2::before {
+      content: '> 0' counter(section) '  ';
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      opacity: 0.25;
+    }
+    .blog-body h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      opacity: 0.8;
+      margin: 1.5rem 0 0.4rem;
+      letter-spacing: 0.02em;
+    }
+    .blog-body hr {
+      border: none;
+      height: 1px;
+      background: rgba(240,240,240,0.06);
+      margin: 1.5rem 0;
+    }
+    .blog-body blockquote {
+      border-left: 1px solid rgba(240,240,240,0.2);
+      padding-left: 1rem;
+      margin: 1.25rem 0;
+      font-style: italic;
+      opacity: 0.6;
+    }
+    .blog-body a {
+      color: var(--text-primary);
+      opacity: 0.5;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(240,240,240,0.2);
+      transition: opacity 0.2s;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      padding: 2px 6px;
+      border: 1px solid rgba(240,240,240,0.12);
+      border-radius: 2px;
+    }
+    .blog-body a::before { content: '↗ '; }
+    .blog-body a:hover { opacity: 0.8; }
+    .blog-body ul, .blog-body ol {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--text-primary);
+      opacity: 0.65;
+      padding-left: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .blog-body li {
+      display: list-item;
+      width: 100%;
+      margin-bottom: 0.3rem;
+    }
+    .blog-body code {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      background: rgba(240,240,240,0.05);
+      border: 1px solid rgba(240,240,240,0.1);
+      padding: 1px 6px;
+      border-radius: 2px;
+    }
+    .blog-body pre {
+      background: rgba(240,240,240,0.04);
+      border: 1px solid rgba(240,240,240,0.08);
+      border-radius: 2px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-bottom: 1.25rem;
+    }
+    .blog-body pre code {
+      border: none;
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+    }
+    .blog-body strong { color: var(--text-bright); font-weight: 700; }
+    .blog-body em { font-style: italic; opacity: 0.75; }
+    /* reset section counter */
+    .blog-body { counter-reset: section; }
+    /* footer */
+    .blog-footer {
+      font-size: 11px;
+      color: var(--text-primary);
+      opacity: 0.3;
+      padding-top: 1.5rem;
+      margin-top: 2rem;
+      border-top: 1px solid rgba(240,240,240,0.06);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .blog-footer::before { content: '// volgende: '; }
+    @media (max-width: 480px) {
+      .blog { padding: 2rem 1.25rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+  <article class="blog">
+
+    <span class="tag">zinnig AI oplossingen voor civiel ingenieurs</span>
+<h1 class="blog-title">zinnige AI oplossingen voor civiel ingenieurs - ouverture</h1>
+
+    <div class="meta"><span>Tom laumen</span><span class="meta-dot"></span><span>28 april 2026</span><span class="meta-dot"></span><span>6 min lezen</span></div>
+
+    <div class="blog-body">
+<blockquote>
+<p>Toepassen van AI in het &lsquo;civiele ontwerp&rsquo;, zonder hype. Of: hoe je &lsquo;AI workflow&rsquo; als civiel ingenieur vooral code zou moeten zijn </p>
+</blockquote>
+<h2>De angst voor AI en/of de wens voor controle</h2>
+<p>Sinds ik ARI ben begonnen zit ik (een ongezonde hoeveelheid) op LinkedIn. Er komen eigenlijk nog maar twee soorten posts langs op de &lsquo;tijdlijn&rsquo;:</p>
+<ol>
+<li>&ldquo;AI gaat alles veranderen&rdquo;</li>
+<li>&ldquo;AI kan helemaal niks/lost niks op&rdquo;</li>
+</ol>
+<p>De nuance zullen de meesten van jullie die me een beetje kennen niet gewend zijn, maar volgens mij is deze hier broodnodig! 
+Laten we AI gewoon gebruiken waar het waarde toevoegd, zonder direct &lsquo;full-retard&rsquo; met je Claude MAX abbonnement de Van Brienenoord te vervangen.
+En als ik AI zeg, bedoel ik (vooral) &lsquo;de language models&rsquo;.</p>
+<h2>Wat is AI eigenlijk?</h2>
+<p>Als je het de jongens in Silicon Valley vraagt, of iemand die hun &lsquo;koolaid&rsquo; heeft gedronken, gaat AI een groot deel van het kenniswerk vervangen, bijvoorbeeld in <a href="ai-2027.com">AI2027</a>. Dit is een veel te reductieve kijk op de zaak.
+Uiteindelijk zijn LLM&rsquo;s gewoon een &lsquo;stateless reducer&rsquo;, zie <a href="https://github.com/humanlayer/12-factor-agents">12-factor agents</a>. Een functie die je in je code runt, je stopt er (ongestructureerde) input in, en je krijgt er (ongestructureerde) output uit. In &lsquo;ongestrucrtureerd&rsquo; zit het goud, het maakt kaas van je &lsquo;data&rsquo;, ook al is die niet perfect of heeft deze een andere modaliteit (plaatjes bijvoorbeeld). Dit was tot voorkort ondenkbaar.</p>
+<h2>Controle vs autonomie: een schuif, geen schakelaar</h2>
+<p>Je kan aan de AI vragen om je een fundering te ontwerpen, en dan krijg je &lsquo;een antwoord&rsquo;. 
+Je kan &lsquo;m ook inzetten om de maatgevende belasting uit analyse van de constructeur te halen waarna je (handmatig of geautomatiseerd) een berekening maakt.
+Dit zijn twee uitersten op het spectrum van &lsquo;autonomie vs controle&rsquo;. Volgens mij moeten we gewoon bij die eerste categorie beginnen, en alleen waar het zin heeft en we controle uit handen willen geven, AI toepassen. Simpel, betrouwbaar en verantwoord. <a href="https://www.lennysnewsletter.com/i/193512668/category-1-deterministic-automation">En waarschijnlijk lossen we een groot deel van onze problemen er al mee op!</a>.</p>
+<h2>Waar beginnen we?</h2>
+<p>Als we nou eens starten met onze werkprocessen in kaart brengen: </p>
+<ul>
+<li>hoe bepaal je de draagkracht van een paalfundering?</li>
+<li>hoe kom je tot de benodigde wapening in de ligger?</li>
+<li>&hellip;</li>
+</ul>
+<p>En vervolgens schetsen we uit welke stukjes daarvan: </p>
+<ul>
+<li>door een mens moet worden uitgevoerd</li>
+<li>door een mens moet worden gecontrolleerd</li>
+<li>door automatisering kan worden opgelost (lekker deterministisch!)</li>
+<li>door AI mag worden opgepakt</li>
+</ul>
+<p>Met dit als basis kunnen we volgens mij komen tot iets wat ons werk daadwerkelijk een stukje mooier/makkelijker/sneller/fijner/beter kan maken!</p>
+<h2>Voorbeeld: draagkracht paalfundering</h2>
+<p>Iets wat ikzelf al zeker 100 keer heb gedaan is een paalfundering uitgerekend. De soms heersende mening/vrees lijkt te zijn dat we dit nu zo gaan doen:</p>
+<ol>
+<li>Stop alle data in het &lsquo;prompt window&rsquo; + prompt &lsquo;Ik wil een paalfundering naast Rotterdam Centraal hebben&rsquo;</li>
+<li>AI: magie </li>
+<li>Rapport.</li>
+</ol>
+<p>Op dit moment is je controle op het rekenwerk helemaal weg. Wanneer er iets niet goed gaat prompt je waarschijnlijk: &lsquo;pas X aan&rsquo;. En dan gaat er weer wat nieuws mis. Ongewenst, <a href="https://youtu.be/XNtkiQJ49Ps?si=wBMDxLdGhyUKuke-">en dat vinden de heren van Legora ook</a>. Of erger, het ziet er wel goed uit&hellip;</p>
+<p>Volgens mij zou het ook zo kunnen:</p>
+<ol>
+<li>Ingenieur: &lsquo;ik wil een paalfundering uitrekenen&rsquo; (prompt)</li>
+<li>AI: route naar paalfundering &lsquo;workflow&rsquo;</li>
+<li>Ingenier: kiest locatie op kaart</li>
+<li>Code: API call naar Dinoloket/database project voor grondonderzoek</li>
+<li>Gebruiker en/of code: interpreteert sonderingen</li>
+<li>Gebruiker: kiest paalsysteem</li>
+<li>AI: haalt maatgevende belastinggeval op uit document constructeur</li>
+<li>Code: Maakt berekening</li>
+<li>Gebruiker: kiest paalpuntniveau</li>
+<li>AI: doet voorstel voor rapport</li>
+<li>AI + gebruiker: itereren naar gewenst rapport</li>
+</ol>
+<p>Je hebt het voordeel van AI: kan uit veel tekst de gewenste informatie halen, schrijft prima als jij &lsquo;m goede input geeft, maar hebt uiteindelijk wel ZEKER de juiste berekening gemaakt. Waar je positieve en negatieve kleef zit, heb jij als gebruiker verzonnen. Scheelt je waarschijnlijk veel hoofdpijn en ergernis, en eventueel wat rechtzaken.</p>
+<h2>Wat wordt ons harnas?</h2>
+<p>Code schrijven met AI werkte best matig toen dit in een chat interface moest, maar met Claude Code (of pi-agents, beter en open-source!) begon het toch behoorlijk goed te werken.
+De grote vraag voor ons civiel ingenieurs is volgens mij dan ook (en ja, dit is op dit moment wel heerlijk gehyped!) wat wordt ons harnas? De vragen worden dan opeens veel praktischer van aard:</p>
+<ul>
+<li>Wat voor data moet er in ons harnas zitten?</li>
+<li>Hoe interacteren we met AI/automatisering?</li>
+<li>Hoe houden we de controle over wat we uitrekenen?!</li>
+</ul>
+<h2>En nu?</h2>
+<p>In dit artikel raken we aan zeker 10 onderwerpen die zeker een blog post &lsquo;an sich&rsquo; zijn en waar je veel dieper op in zou willen gaan. Die gaan volgen!
+Wil je nog wat moois zien? De code base van ARI is opensource: 
+Heb je vragen, opmerkingen of meningen. Reageer vooral op <a href="https://www.linkedin.com/company/ari-engineer/">LinkedIn</a>!</p>
+    </div>
+
+    <p class="blog-footer">Betrouwbare 'AI functies' - hoe bouw je ze?</p>
+  </article>
+</body>
+</html>

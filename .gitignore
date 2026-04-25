@@ -1,0 +1,5 @@
+md_to_blog.py
+*.md
+.venv
+uv.lock
+pyproject.toml
