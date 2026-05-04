@@ -201,47 +201,18 @@
 <p>&ldquo;Imagine if an API failed 5% of the time. Most engineers would drop everything and fix it. Yet when LLMs fail at the same rate, we shrug it off and call it acceptable.&rdquo; &ndash; Vaibhav Gupta (BAML)</p>
 </blockquote>
 <h2>Introductie</h2>
-<p>In de vorige blog hebben we integraal beschouwd of en waar we LLM&rsquo;s uberhaupt moeten toepassen.
-Onze conclusie is, pas LLM&rsquo;s waar ze waarde toevoegd en je de controle uit handen kan geven. 
-Dit heeft twee voordelen: </p>
-<ul>
-<li>de stukken van je workflow die echt goed moeten zijn laat je door de ingenieur doen, of maak je &lsquo;gewoon&rsquo; deterministisch (dus code)</li>
-<li>de punten waar je AI introduceert hebben een beperkte scope: routen naar de juist workflows, inlezen data uit rapport, &hellip;</li>
-</ul>
-<p>Dit is belangrijk omdat LLM&rsquo;s inherent probabilistisch zijn en we (momenteel) niet weten hoe we LLM&rsquo;s precies kunnen laten doen wat we willen zonder uitvoerig te testen. 
-Daarnaast weten we ook dat, afhankelijk van de grootte van je &lsquo;context window&rsquo;, de nauwkeurigheid angstaanjagend snel afneemt: <a href="https://www.trychroma.com/research/context-rot">context rot</a>.
-Dit was weliswaar met de modellen van juli 2025, maar de nauwkeurigheid nam bij 3500 tokens (2000 woorden), af van &gt;93% tot &lt;60% voor de top modellen op dat moment. </p>
-<p>De vraag is dan ook: hoe krijg je die AI functies betrouwbaar! 
-Drie concepten vormen (samen) het antwoord: </p>
-<ol>
-<li>routing</li>
-<li>context engineering </li>
-<li>evals</li>
-</ol>
+<p>LLM&rsquo;s zijn krachtig maar onvoorspelbaar. In de <a href="https://ari.engineer/blog/1">vorige blog</a> kozen we daarom voor een beperkte scope: AI alleen waar het waarde toevoegt én je de controle kunt loslaten. De vraag vervolgvraag is dan: hoe maak je die AI-functies dan betrouwbaar?</p>
+<p>Dat is allesbehalve vanzelfsprekend. LLM&rsquo;s zijn inherent probabilistisch en de nauwkeurigheid neemt snel af naarmate de context groeit (<a href="https://www.trychroma.com/research/context-rot">context rot</a>). Drie concepten vormen het antwoord: routing, context engineering en evals.</p>
 <h2>Routing: het kleinste zinvolle begin</h2>
-<p>Routing is de eenvoudigste vorm van AI in een workflow: de AI classificeert input en bepaalt welke workflow wordt uitgevoerd. De AI beslist niet <em>hoe</em> de berekening verloopt maar enkel <em>welke</em> berekening gemaakt moet worden. 
-Op deze manier behoud je maximale controle over je berekening, <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md">&ldquo;own your control flow&rdquo;</a>! 
-Wanneer je de LLM breder wil inzetten, moet die weten waar de berekening uiteindelijk fysiek terecht komt (juiste land voor de juiste norm), hoe het een berekening moet maken (afhankelijk van de project context, de project fase, het programma van eise, &hellip;), wat de planning is (voor een adequaat ontwerp) en nog veel meer project context. 
-Al deze context beheersen (zie context rot), en er ook nog voor zorgen dat de LLM <em>betrouwbaar</em> is(!), is op zijn zachtst gezegd ambitieus en waarschijnlijk onmogelijk (op dit moment).
-Daarnaast is dit ook geen probleem, want met &lsquo;good old&rsquo; software engineering komen we ver genoeg!</p>
-<p>In het <a href="https://github.com/tlaumen/ari/blob/543668f178c7c29efdbd784209bec6b19c882098/ari/classify_work.py#L50">ari pakket</a> zit een simpele router voor geotechnische berekeningen: welke berekening wil de gebruiker uitvoeren? 
-De gebruiker typt: &ldquo;reken de draagkracht uit bij cpt001&rdquo; en de LLM vertaalt dat naar één van vier opties: <code>PAALFUNDERING</code>, <code>STABILITEIT</code>, <code>ZETTINGEN</code> of <code>DAMWAND</code>. 
-Lukt dat niet, dan vraagt de LLM om verduidelijking. 
-Meer AI komt er niet kijken bij het maken van de berekening. </p>
+<p>Routing is de eenvoudigste vorm van AI in een workflow: de LLM classificeert de input en bepaalt welke workflow wordt uitgevoerd. Er wordt dus niet <em>hoe</em> de berekening gedaan wordt, maar <em>welke</em>. Zo behoud je maximale controle: <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md">&ldquo;own your control flow&rdquo;</a>.</p>
+<p>In het <a href="https://github.com/tlaumen/ari/blob/543668f178c7c29efdbd784209bec6b19c882098/ari/classify_work.py#L50">ari pakket</a> zit een eenvoudige router voor geotechnische berekeningen. De gebruiker typt: &ldquo;reken de draagkracht uit bij cpt001&rdquo; en de LLM vertaalt dat naar <code>PAALFUNDERING</code>, <code>STABILITEIT</code>, <code>ZETTINGEN</code> of <code>DAMWAND</code>. Lukt dat niet, dan vraagt de LLM om verduidelijking. Meer AI komt er niet aan te pas.</p>
+<p>Maar een goede router staat of valt met wat je het model meegeeft. Dat is context engineering.</p>
 <h2>Context engineering: schaven aan de LLM response</h2>
-<p>De term &ldquo;prompt engineering&rdquo; is iets wat de meesten van jullie wel kennen: je prompt zo formuleren dat je het juiste antwoord krijgt. 
-Wanneer je AI in je systemen integreert gaat het om wat je de AI <em>als geheel</em> aanbiedt: de &lsquo;system prompt&rsquo;, de prompts van de gebruiker, relevante informatie, het invoerformaat en het uitvoerformaat.
-Deze context optimaal benutten wordt ook wel <a href="https://claude.ai/public/artifacts/f498a4cc-4c45-481c-a6dd-8e1d196dadb0">context engineering</a> genoemd.</p>
-<p>Nu zou je gewoon een van de vele <a href="https://code-b.dev/blog/python-frameworks-ai-agent">AI framework&rsquo;s</a> kunnen gebruiken om je AI te integreren, maar deze maken het <em>juist</em> lastig om je context te beheersen. 
-Dit wil je dus niet uitbesteden, <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md">&ldquo;own your prompts&rdquo;</a>!</p>
+<p>Wanneer je AI integreert, zijn er een boel knoppen waar je aan kan draaien: de system prompt, gebruikersinput, relevante informatie en het output format. Dit geheel optimaliseren heet <a href="https://claude.ai/public/artifacts/f498a4cc-4c45-481c-a6dd-8e1d196dadb0">context engineering</a>. 
+Gebruik geen <a href="https://code-b.dev/blog/python-frameworks-ai-agent">AI framework</a> om dit te doen, want die maken het juist lastig om je context te beheersen. <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md">&ldquo;Own your prompts&rdquo;</a>.</p>
 <h3>BAML</h3>
-<p><a href="https://docs.boundaryml.com/home">BAML</a> is een <a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL</a> voor AI functies die het eenvoudig maakt om je context te beheersen.
-In plaats van losse &lsquo;promptstrings&rsquo; schrijf je functies met de invoer, uitvoer, structuur en informatie die optimaal werken. 
-BAML zorgt voor de koppeling met de LLM provider, fuzzy parsing (<a href="https://tokenmix.ai/blog/structured-output-json-guide">LLM&rsquo;s maken nog wel eens foutjes in het output schema</a>), retries en testbaarheid.</p>
-<p>Als voorbeeld kun je hier (een licht versimpelde) versie van de router voor geotechnische berekeningen vinden. 
-In de functie <code>ChooseWorkflow</code> wordt de LLM aangeroepen met in de &lsquo;system prompt&rsquo; alles tot <code>{{_.role("user")}}</code>.
-De &lsquo;user prompt&rsquo; bevat alles vanaf dit blok. 
-De input en output formats worden in het <code>{{ input }}</code> en het <code>{{ ctx.output_format }}</code> blok gestopt.</p>
+<p><a href="https://docs.boundaryml.com/home">BAML</a> is een <a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL</a> voor AI-functies. In plaats van losse promptstrings in je codebase, schrijf je functies met invoer, uitvoer en structuur. BAML regelt de koppeling met de LLM-provider, <a href="https://boundaryml.com/blog/schema-aligned-parsing">schema aligned parsing</a> en testbaarheid.</p>
+<p>Hieronder de geotechnische router. Alles tot <code>{{_.role("user")}}</code> is de system prompt, alles erna de user prompt. De objecten <code>Berekening</code> en <code>VerzoekVerduidelijking</code> worden in <code>{{ ctx.output_format }}</code> in de context geplaatst en bepalen het output format.</p>
 <div class="highlight" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><span style="color: #FF7B72">enum</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">Berekening</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
 <span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">PAALFUNDERING</span>
 <span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">STABILITEIT</span>
@@ -268,13 +239,7 @@ De input en output formats worden in het <code>{{ input }}</code> en het <code>{
 <span style="color: #E6EDF3">}</span>
 </pre></div>
 
-<p>Drie onderdelen van context engineering zijn hier zichtbaar:</p>
-<ul>
-<li>taakafbakening: de systeemprompt omschrijft exact wat de AI mag en niet mag doen. De gebruikersprompt wat de gebruiker van de LLM wil.</li>
-<li>input format: <code>input: string</code> is de enige input en gewoon tekst (string).</li>
-<li>output format: de <code>enum</code> en <code>class</code> definiëren wat een geldig antwoord is.</li>
-</ul>
-<p>Deze AI functie wordt door BAML in de praktijk omgezet naar de volgende API call richting de LLM provider:</p>
+<p>BAML vertaalt dit vervolgens naar de volgende API call:</p>
 <pre><code>&lt;system prompt&gt;
   Classificeer welk werk er uitgevoerd moet worden.
   Als de input onduidelijk is, geef je deze feedback terug aan de gebruiker.
@@ -289,28 +254,25 @@ De input en output formats worden in het <code>{{ input }}</code> en het <code>{
 &lt;user prompt&gt;
   prompt van de gebruiker
 &lt;/user prompt&gt;
-
 </code></pre>
+<p>Of die context ook echt werkt, weet je pas als je het meet. Dat zijn evals.</p>
 <h2>Evals: vertrouwen kwantificeren</h2>
-<p>Een AI functie schrijven is een ding, valideren dat ie werkt zoals verwacht is andere koek! 
-Evals zijn gestructureerde testcases: een input, een verwachte output en een check. 
-Deze check kan geautomatiseerd zijn (eenvoudig bij een router) waardoor het een soort unit test is. 
-Bij complexere AI functie kunnen ze ook door AI worden gecontrolleerd (<a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">LLM-as-judge</a>) of door een mens, <a href="https://gmauthority.com/blog/2023/12/gm-dealer-chat-bot-agrees-to-sell-2024-chevy-tahoe-for-1/">en dan hopelijk met meer dan alleen &lsquo;vibes&rsquo;</a>.</p>
-<p>Waarom heb je ze nodig? 
-Aangezien de LLM inherent probabilistisch is, wil je een toetsingskader hebben voor de betrouwbaarheid van je AI functie. 
-Ook zijn de modellen nog heel erg in ontwikkeling, <a href="https://openai.com/index/sycophancy-in-gpt-4o/">met significant afwijkend gedrag tot gevolg</a>, en dus wil je een test set hebben waarop je nieuwe modellen schaalbaar kan toetsen. </p>
-<p><em>Zonder evals zijn je gebruikers het proefkonijn.</em></p>
+<p>Evals zijn gestructureerde testcases: een input, een verwachte output en een check. 
+Bij een router is dat volledig te automatiseren, vergelijkbaar met een unit test. 
+Bij complexere functies kun je <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">LLM-as-judge</a> inzetten, of een mens (<a href="https://gmauthority.com/blog/2023/12/gm-dealer-chat-bot-agrees-to-sell-2024-chevy-tahoe-for-1/">liefst met meer dan alleen &lsquo;vibes&rsquo;</a>).</p>
+<p>Ze zijn onmisbaar omdat LLM&rsquo;s probabilistisch zijn én <a href="https://openai.com/index/sycophancy-in-gpt-4o/">soms significant afwijkend gedrag vertonen</a> na een modelupdate. </p>
+<p><em>En zonder evals zijn je gebruikers het proefkonijn.</em></p>
 <h3>BAML evals</h3>
-<p>Voor de eerder gebouwde AI functie is er een simpele set met evals geschreven.</p>
+<p>Vijf gevallen die samen de grenzen aftasten: van eenduidige invoer tot vragen die te vaag zijn om een berekening mee te starten.</p>
 <div class="highlight" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowPile</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
 <span style="color: #6E7681">    </span>functions<span style="color: #6E7681"> </span><span style="color: #E6EDF3">[</span><span style="color: #F0883E; font-weight: bold">ChooseWorkflow</span><span style="color: #E6EDF3">]</span>
 <span style="color: #6E7681">    </span>args<span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
 <span style="color: #6E7681">        </span>input<span style="color: #6E7681"> </span><span style="color: #A5D6FF">&quot;Ik wil graag een heipaal uitrekenen bij cpt001&quot;</span>
 <span style="color: #6E7681">    </span><span style="color: #E6EDF3">}</span>
 <span style="color: #6E7681">    </span><span style="color: #FF7B72; font-weight: bold">@@</span>assert<span style="color: #E6EDF3">(</span><span style="color: #7EE787">{{ this == &quot;PAALFUNDERING&quot; }}</span><span style="color: #E6EDF3">)</span>
+<span style="color: #E6EDF3">}</span>
 
-
-<span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowZetting</span><span style="color: #E6EDF3">{</span>
+<span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowZetting</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
 <span style="color: #6E7681">    </span>functions<span style="color: #6E7681"> </span><span style="color: #E6EDF3">[</span><span style="color: #F0883E; font-weight: bold">ChooseWorkflow</span><span style="color: #E6EDF3">]</span>
 <span style="color: #6E7681">    </span>args<span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
 <span style="color: #6E7681">        </span>input<span style="color: #6E7681"> </span><span style="color: #A5D6FF">&quot;Reken de zettingen uit bij cpt001&quot;</span>
@@ -334,26 +296,20 @@ Ook zijn de modellen nog heel erg in ontwikkeling, <a href="https://openai.com/i
 <span style="color: #6E7681">    </span><span style="color: #FF7B72; font-weight: bold">@@</span>assert<span style="color: #E6EDF3">(</span><span style="color: #7EE787">{{ this.intentie == &quot;Geef meer informatie&quot; }}</span><span style="color: #E6EDF3">)</span>
 <span style="color: #E6EDF3">}</span>
 
-<span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowStabiliteit2</span><span style="color: #E6EDF3">{</span>
+<span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowStabiliteit2</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
 <span style="color: #6E7681">    </span>functions<span style="color: #6E7681"> </span><span style="color: #E6EDF3">[</span><span style="color: #F0883E; font-weight: bold">ChooseWorkflow</span><span style="color: #E6EDF3">]</span>
 <span style="color: #6E7681">    </span>args<span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
 <span style="color: #6E7681">        </span>input<span style="color: #6E7681"> </span><span style="color: #A5D6FF">&quot;Hoe stabiel is de Lekdijk?&quot;</span>
 <span style="color: #6E7681">    </span><span style="color: #E6EDF3">}</span>
 <span style="color: #6E7681">    </span><span style="color: #FF7B72; font-weight: bold">@@</span>assert<span style="color: #E6EDF3">(</span><span style="color: #7EE787">{{ this.intentie == &quot;Geef meer informatie&quot; }}</span><span style="color: #E6EDF3">)</span>
+<span style="color: #E6EDF3">}</span>
 </pre></div>
 
-<p>Vier dingen die deze testcases illustreren:</p>
-<ul>
-<li>&ldquo;heipaal&rdquo; moet leiden naar <code>PAALFUNDERING</code>.</li>
-<li>&ldquo;zettingen&rdquo; moet leiden naar <code>ZETTINGEN</code>.</li>
-<li>&ldquo;zakking&rdquo; kan zetting betekenen maar is ook ambigue. De eval dwingt af dat de LLM om verduidelijking vraagt.</li>
-<li>&ldquo;stbi&rdquo; is een gangbare afkorting voor macrostabiliteit toets aan de binnendijkse zijde. Er is echter ook een verwijzing naar data die niet meegegeven is (namelijk de Dorpstraat in Krimpen aan de IJssel). De eval toetst of de AI dit herkent als onvolledig in plaats van als stabiliteitsberekening.</li>
-<li>&ldquo;Hoe stabiel is de Lekdijk?&rdquo; klinkt als een stabiliteitsvraag, maar is te vaag om een berekening mee te starten. De eval toetst of de AI die grens respecteert.</li>
-</ul>
-<p>Met een aanpak vergelijkbaar met <a href="https://en.wikipedia.org/wiki/Test-driven_development">TDD</a> kun je op deze manier eerst je testgevallen met hun gewenste resultaat opstellen.
-Vervolgens &lsquo;engineer&rsquo; je het <code>context window</code> totdat je krijgt wat je verwacht. In BAML gaat dit eenvoudig met hun <a href="https://www.promptfiddle.com/embed?id=BAML-Examples-IiugE">prompt fiddle</a>. </p>
+<p>De cases testen de grenzen van de router: eenduidige invoer (&ldquo;heipaal&rdquo;, &ldquo;zettingen&rdquo;), ambigue termen (&ldquo;zakking&rdquo;), onvolledige context (&ldquo;stbi&rdquo; zonder locatiedata) en vragen die te vaag zijn om een berekening mee te starten. </p>
+<p>Met een aanpak vergelijkbaar met <a href="https://en.wikipedia.org/wiki/Test-driven_development">TDD</a> stel je die gevallen eerst op, daarna engineer je de context totdat alles klopt. Met de <a href="https://www.promptfiddle.com/embed?id=BAML-Examples-IiugE">prompt fiddle</a> van BAML kan dit envoudig.</p>
 <h2>Op weg naar betrouwbare AI functies</h2>
-<p>Met het toepassen van je LLM als router waar mogelijk, de context van de modellen &lsquo;engineeren&rsquo; en evals als validatie, ben je in controle met het ontwikkelen van je AI functies. Zo bouw je stap voor stap aan betrouwbare AI workflow.</p>
+<p>Routing waar mogelijk, context zorgvuldig inrichten, evals als toetssteen. Zo bouw je stap voor stap aan AI-functies waar je op kunt bouwen. 
+En als je fan bent van &lsquo;prompt optimizers, ga dan vooral los in de <a href="https://www.linkedin.com/company/ari-engineer/">LinkedIn comments</a>!</p>
     </div>
 
     <p class="blog-footer">Waarom (alleen) chat niet werkt</p>

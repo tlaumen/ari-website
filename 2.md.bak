@@ -1,0 +1,191 @@
+---
+title: Betrouwbare 'AI functies'
+author: Tom Laumen
+date: 3 mei 2026
+read_time: 6 min lezen
+series: AI met een bouwhelm op
+next: Waarom (alleen) chat niet werkt
+---
+
+> "Imagine if an API failed 5% of the time. Most engineers would drop everything and fix it. Yet when LLMs fail at the same rate, we shrug it off and call it acceptable." -- Vaibhav Gupta (BAML)
+
+## Introductie
+
+In de vorige blog hebben we integraal beschouwd of en waar we LLM's uberhaupt moeten toepassen.
+Onze conclusie is, pas LLM's waar ze waarde toevoegd en je de controle uit handen kan geven. 
+Dit heeft twee voordelen: 
+
+- de stukken van je workflow die echt goed moeten zijn laat je door de ingenieur doen, of maak je 'gewoon' deterministisch (dus code)
+- de punten waar je AI introduceert hebben een beperkte scope: routen naar de juist workflows, inlezen data uit rapport, ...
+
+Dit is belangrijk omdat LLM's inherent probabilistisch zijn en we (momenteel) niet weten hoe we LLM's precies kunnen laten doen wat we willen zonder uitvoerig te testen. 
+Daarnaast weten we ook dat, afhankelijk van de grootte van je 'context window', de nauwkeurigheid angstaanjagend snel afneemt: [context rot](https://www.trychroma.com/research/context-rot).
+Dit was weliswaar met de modellen van juli 2025, maar de nauwkeurigheid nam bij 3500 tokens (2000 woorden), af van >93% tot <60% voor de top modellen op dat moment. 
+
+De vraag is dan ook: hoe krijg je die AI functies betrouwbaar! 
+Drie concepten vormen (samen) het antwoord: 
+
+1. routing
+2. context engineering 
+3. evals
+
+## Routing: het kleinste zinvolle begin
+
+Routing is de eenvoudigste vorm van AI in een workflow: de AI classificeert input en bepaalt welke workflow wordt uitgevoerd. De AI beslist niet *hoe* de berekening verloopt maar enkel *welke* berekening gemaakt moet worden. 
+Op deze manier behoud je maximale controle over je berekening, ["own your control flow"](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md)! 
+Wanneer je de LLM breder wil inzetten, moet die weten waar de berekening uiteindelijk fysiek terecht komt (juiste land voor de juiste norm), hoe het een berekening moet maken (afhankelijk van de project context, de project fase, het programma van eise, ...), wat de planning is (voor een adequaat ontwerp) en nog veel meer project context. 
+Al deze context beheersen (zie context rot), en er ook nog voor zorgen dat de LLM *betrouwbaar* is(!), is op zijn zachtst gezegd ambitieus en waarschijnlijk onmogelijk (op dit moment).
+Daarnaast is dit ook geen probleem, want met 'good old' software engineering komen we ver genoeg!
+
+In het [ari pakket](https://github.com/tlaumen/ari/blob/543668f178c7c29efdbd784209bec6b19c882098/ari/classify_work.py#L50) zit een simpele router voor geotechnische berekeningen: welke berekening wil de gebruiker uitvoeren? 
+De gebruiker typt: "reken de draagkracht uit bij cpt001" en de LLM vertaalt dat naar één van vier opties: `PAALFUNDERING`, `STABILITEIT`, `ZETTINGEN` of `DAMWAND`. 
+Lukt dat niet, dan vraagt de LLM om verduidelijking. 
+Meer AI komt er niet kijken bij het maken van de berekening. 
+
+## Context engineering: schaven aan de LLM response
+
+De term "prompt engineering" is iets wat de meesten van jullie wel kennen: je prompt zo formuleren dat je het juiste antwoord krijgt. 
+Wanneer je AI in je systemen integreert gaat het om wat je de AI *als geheel* aanbiedt: de 'system prompt', de prompts van de gebruiker, relevante informatie, het invoerformaat en het uitvoerformaat.
+Deze context optimaal benutten wordt ook wel [context engineering](https://claude.ai/public/artifacts/f498a4cc-4c45-481c-a6dd-8e1d196dadb0) genoemd.
+
+Nu zou je gewoon een van de vele [AI framework's](https://code-b.dev/blog/python-frameworks-ai-agent) kunnen gebruiken om je AI te integreren, maar deze maken het *juist* lastig om je context te beheersen. 
+Dit wil je dus niet uitbesteden, ["own your prompts"](https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md)!
+
+### BAML
+
+[BAML](https://docs.boundaryml.com/home) is een [DSL](https://en.wikipedia.org/wiki/Domain-specific_language) voor AI functies die het eenvoudig maakt om je context te beheersen.
+In plaats van losse 'promptstrings' schrijf je functies met de invoer, uitvoer, structuur en informatie die optimaal werken. 
+BAML zorgt voor de koppeling met de LLM provider, fuzzy parsing ([LLM's maken nog wel eens foutjes in het output schema](https://tokenmix.ai/blog/structured-output-json-guide)), retries en testbaarheid.
+
+Als voorbeeld kun je hier (een licht versimpelde) versie van de router voor geotechnische berekeningen vinden. 
+In de functie `ChooseWorkflow` wordt de LLM aangeroepen met in de 'system prompt' alles tot `{{_.role("user")}}`.
+De 'user prompt' bevat alles vanaf dit blok. 
+De input en output formats worden in het `{{ input }}` en het `{{ ctx.output_format }}` blok gestopt.
+
+```baml
+enum Berekening {
+    PAALFUNDERING
+    STABILITEIT
+    ZETTINGEN
+    DAMWAND
+}
+
+class VerzoekVerduidelijking {
+  intentie "Geef meer informatie"
+  verzoek_tot_verduidelijking string
+}
+
+function ChooseWorkflow(input: string) -> Berekening | VerzoekVerduidelijking {
+  client Claude4_5Haiku
+  prompt #"
+    {{ _.role("system") }}
+    Classificeer welk werk er uitgevoerd moet worden.
+    Als de input onduidelijk is, geef je deze feedback terug aan de gebruiker.
+    {{ ctx.output_format }}
+
+    {{ _.role("user") }}
+    {{ input }}
+  "#
+}
+```
+
+Drie onderdelen van context engineering zijn hier zichtbaar:
+
+- taakafbakening: de systeemprompt omschrijft exact wat de AI mag en niet mag doen. De gebruikersprompt wat de gebruiker van de LLM wil.
+- input format: `input: string` is de enige input en gewoon tekst (string).
+- output format: de `enum` en `class` definiëren wat een geldig antwoord is.
+
+Deze AI functie wordt door BAML in de praktijk omgezet naar de volgende API call richting de LLM provider:
+
+```
+<system prompt>
+  Classificeer welk werk er uitgevoerd moet worden.
+  Als de input onduidelijk is, geef je deze feedback terug aan de gebruiker.
+
+  Answer in JSON using any of these schemas:
+    'PAALFUNDERING' or 'STABILITEIT' or 'ZETTINGEN' or 'DAMWAND' or {
+      intentie: "Geef meer informatie",
+      verzoek_tot_verduidelijking: string,
+    }
+</system prompt>
+
+<user prompt>
+  prompt van de gebruiker
+</user prompt>
+
+```
+
+## Evals: vertrouwen kwantificeren
+
+Een AI functie schrijven is een ding, valideren dat ie werkt zoals verwacht is andere koek! 
+Evals zijn gestructureerde testcases: een input, een verwachte output en een check. 
+Deze check kan geautomatiseerd zijn (eenvoudig bij een router) waardoor het een soort unit test is. 
+Bij complexere AI functie kunnen ze ook door AI worden gecontrolleerd ([LLM-as-judge](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)) of door een mens, [en dan hopelijk met meer dan alleen 'vibes'](https://gmauthority.com/blog/2023/12/gm-dealer-chat-bot-agrees-to-sell-2024-chevy-tahoe-for-1/).
+
+Waarom heb je ze nodig? 
+Aangezien de LLM inherent probabilistisch is, wil je een toetsingskader hebben voor de betrouwbaarheid van je AI functie. 
+Ook zijn de modellen nog heel erg in ontwikkeling, [met significant afwijkend gedrag tot gevolg](https://openai.com/index/sycophancy-in-gpt-4o/), en dus wil je een test set hebben waarop je nieuwe modellen schaalbaar kan toetsen. 
+
+*Zonder evals zijn je gebruikers het proefkonijn.*
+
+### BAML evals
+
+Voor de eerder gebouwde AI functie is er een simpele set met evals geschreven.
+
+```BAML
+test TestChooseWorkflowPile {
+    functions [ChooseWorkflow]
+    args {
+        input "Ik wil graag een heipaal uitrekenen bij cpt001"
+    }
+    @@assert({{ this == "PAALFUNDERING" }})
+
+
+test TestChooseWorkflowZetting{
+    functions [ChooseWorkflow]
+    args {
+        input "Reken de zettingen uit bij cpt001"
+    }
+    @@assert({{ this == "ZETTINGEN" }})
+}
+
+test TestChooseWorkflowZetting2 {
+    functions [ChooseWorkflow]
+    args {
+        input "Wat is de zakking ter plaatse van km 23.5?"
+    }
+    @@assert({{ this.intentie == "Geef meer informatie" }})
+}
+
+test TestChooseWorkflowStabiliteit {
+    functions [ChooseWorkflow]
+    args {
+        input "Reken de stbi uit bij de Dorpstraat in Krimpen aan de IJssel"
+    }
+    @@assert({{ this.intentie == "Geef meer informatie" }})
+}
+
+test TestChooseWorkflowStabiliteit2{
+    functions [ChooseWorkflow]
+    args {
+        input "Hoe stabiel is de Lekdijk?"
+    }
+    @@assert({{ this.intentie == "Geef meer informatie" }})
+```
+
+Vier dingen die deze testcases illustreren:
+
+- "heipaal" moet leiden naar `PAALFUNDERING`.
+- "zettingen" moet leiden naar `ZETTINGEN`.
+- "zakking" kan zetting betekenen maar is ook ambigue. De eval dwingt af dat de LLM om verduidelijking vraagt.
+- "stbi" is een gangbare afkorting voor macrostabiliteit toets aan de binnendijkse zijde. Er is echter ook een verwijzing naar data die niet meegegeven is (namelijk de Dorpstraat in Krimpen aan de IJssel). De eval toetst of de AI dit herkent als onvolledig in plaats van als stabiliteitsberekening.
+- "Hoe stabiel is de Lekdijk?" klinkt als een stabiliteitsvraag, maar is te vaag om een berekening mee te starten. De eval toetst of de AI die grens respecteert.
+
+Met een aanpak vergelijkbaar met [TDD](https://en.wikipedia.org/wiki/Test-driven_development) kun je op deze manier eerst je testgevallen met hun gewenste resultaat opstellen.
+Vervolgens 'engineer' je het `context window` totdat je krijgt wat je verwacht. In BAML gaat dit eenvoudig met hun [prompt fiddle](https://www.promptfiddle.com/embed?id=BAML-Examples-IiugE). 
+
+## Op weg naar betrouwbare AI functies
+
+Met het toepassen van je LLM als router waar mogelijk, de context van de modellen 'engineeren' en evals als validatie, ben je in controle met het ontwikkelen van je AI functies. Zo bouw je stap voor stap aan betrouwbare AI workflow.
+
+
