@@ -3,3 +3,4 @@ md_to_blog.py
 .venv
 uv.lock
 pyproject.toml
+oud_*

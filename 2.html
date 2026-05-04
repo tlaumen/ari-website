@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Betrouwbare 'AI functies'</title>
+  <style>
+    :root {
+      --text-primary: #F0F0F0;
+      --text-bright:  #FFFFFF;
+      --deep-black:   #0A0A0A;
+      --glow-color:   rgba(240, 240, 240, 0.3);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', Courier, 'Lucida Console', Monaco, monospace;
+      background-color: var(--deep-black);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .blog {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+    .tag {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      opacity: 0.45;
+      margin-bottom: 1.75rem;
+      display: block;
+    }
+    .tag::before { content: '// '; }
+    .blog-title {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text-bright);
+      text-shadow: 0 0 10px var(--glow-color);
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      opacity: 0.4;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(240,240,240,0.08);
+      letter-spacing: 0.04em;
+    }
+    .meta-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      opacity: 0.4;
+    }
+    /* ── Body content ── */
+    .blog-body { margin-top: 2rem; }
+    .blog-body p {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--text-primary);
+      opacity: 0.7;
+      margin-bottom: 1.25rem;
+    }
+    .blog-body h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-bright);
+      text-shadow: 0 0 8px rgba(240,240,240,0.2);
+      letter-spacing: 0.02em;
+      margin: 2rem 0 0.45rem;
+      counter-increment: section;
+    }
+    .blog-body h2::before {
+      content: '> 0' counter(section) '  ';
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      opacity: 0.25;
+    }
+    .blog-body h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      opacity: 0.8;
+      margin: 1.5rem 0 0.4rem;
+      letter-spacing: 0.02em;
+    }
+    .blog-body hr {
+      border: none;
+      height: 1px;
+      background: rgba(240,240,240,0.06);
+      margin: 1.5rem 0;
+    }
+    .blog-body blockquote {
+      border-left: 1px solid rgba(240,240,240,0.2);
+      padding-left: 1rem;
+      margin: 1.25rem 0;
+      font-style: italic;
+      opacity: 0.6;
+    }
+    .blog-body a {
+      color: var(--text-primary);
+      opacity: 0.5;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(240,240,240,0.2);
+      transition: opacity 0.2s;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      padding: 2px 6px;
+      border: 1px solid rgba(240,240,240,0.12);
+      border-radius: 2px;
+    }
+    .blog-body a::before { content: '↗ '; }
+    .blog-body a:hover { opacity: 0.8; }
+    .blog-body ul, .blog-body ol {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--text-primary);
+      opacity: 0.65;
+      padding-left: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .blog-body li {
+      display: list-item;
+      width: 100%;
+      margin-bottom: 0.3rem;
+    }
+    .blog-body code {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      background: rgba(240,240,240,0.05);
+      border: 1px solid rgba(240,240,240,0.1);
+      padding: 1px 6px;
+      border-radius: 2px;
+    }
+    .blog-body pre {
+      background: rgba(240,240,240,0.04);
+      border: 1px solid rgba(240,240,240,0.08);
+      border-radius: 2px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-bottom: 1.25rem;
+    }
+    .blog-body pre code {
+      border: none;
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+    }
+    /* Pygments highlighted BAML blocks */
+    .blog-body .highlight {
+      border-radius: 2px;
+      margin-bottom: 1.25rem;
+      overflow-x: auto;
+    }
+    .blog-body .highlight pre {
+      border: none;
+      margin-bottom: 0;
+      font-size: 0.85rem;
+    }
+    .blog-body strong { color: var(--text-bright); font-weight: 700; }
+    .blog-body em { font-style: italic; opacity: 0.75; }
+    /* reset section counter */
+    .blog-body { counter-reset: section; }
+    /* footer */
+    .blog-footer {
+      font-size: 11px;
+      color: var(--text-primary);
+      opacity: 0.3;
+      padding-top: 1.5rem;
+      margin-top: 2rem;
+      border-top: 1px solid rgba(240,240,240,0.06);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .blog-footer::before { content: '// volgende: '; }
+    @media (max-width: 480px) {
+      .blog { padding: 2rem 1.25rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+  <article class="blog">
+
+    <span class="tag">AI met een bouwhelm op</span>
+<h1 class="blog-title">Betrouwbare 'AI functies'</h1>
+
+    <div class="meta"><span>Tom Laumen</span><span class="meta-dot"></span><span>3 mei 2026</span><span class="meta-dot"></span><span>6 min lezen</span></div>
+
+    <div class="blog-body">
+<blockquote>
+<p>&ldquo;Imagine if an API failed 5% of the time. Most engineers would drop everything and fix it. Yet when LLMs fail at the same rate, we shrug it off and call it acceptable.&rdquo; &ndash; Vaibhav Gupta (BAML)</p>
+</blockquote>
+<h2>Introductie</h2>
+<p>In de vorige blog hebben we integraal beschouwd of en waar we LLM&rsquo;s uberhaupt moeten toepassen.
+Onze conclusie is, pas LLM&rsquo;s waar ze waarde toevoegd en je de controle uit handen kan geven. 
+Dit heeft twee voordelen: </p>
+<ul>
+<li>de stukken van je workflow die echt goed moeten zijn laat je door de ingenieur doen, of maak je &lsquo;gewoon&rsquo; deterministisch (dus code)</li>
+<li>de punten waar je AI introduceert hebben een beperkte scope: routen naar de juist workflows, inlezen data uit rapport, &hellip;</li>
+</ul>
+<p>Dit is belangrijk omdat LLM&rsquo;s inherent probabilistisch zijn en we (momenteel) niet weten hoe we LLM&rsquo;s precies kunnen laten doen wat we willen zonder uitvoerig te testen. 
+Daarnaast weten we ook dat, afhankelijk van de grootte van je &lsquo;context window&rsquo;, de nauwkeurigheid angstaanjagend snel afneemt: <a href="https://www.trychroma.com/research/context-rot">context rot</a>.
+Dit was weliswaar met de modellen van juli 2025, maar de nauwkeurigheid nam bij 3500 tokens (2000 woorden), af van &gt;93% tot &lt;60% voor de top modellen op dat moment. </p>
+<p>De vraag is dan ook: hoe krijg je die AI functies betrouwbaar! 
+Drie concepten vormen (samen) het antwoord: </p>
+<ol>
+<li>routing</li>
+<li>context engineering </li>
+<li>evals</li>
+</ol>
+<h2>Routing: het kleinste zinvolle begin</h2>
+<p>Routing is de eenvoudigste vorm van AI in een workflow: de AI classificeert input en bepaalt welke workflow wordt uitgevoerd. De AI beslist niet <em>hoe</em> de berekening verloopt maar enkel <em>welke</em> berekening gemaakt moet worden. 
+Op deze manier behoud je maximale controle over je berekening, <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md">&ldquo;own your control flow&rdquo;</a>! 
+Wanneer je de LLM breder wil inzetten, moet die weten waar de berekening uiteindelijk fysiek terecht komt (juiste land voor de juiste norm), hoe het een berekening moet maken (afhankelijk van de project context, de project fase, het programma van eise, &hellip;), wat de planning is (voor een adequaat ontwerp) en nog veel meer project context. 
+Al deze context beheersen (zie context rot), en er ook nog voor zorgen dat de LLM <em>betrouwbaar</em> is(!), is op zijn zachtst gezegd ambitieus en waarschijnlijk onmogelijk (op dit moment).
+Daarnaast is dit ook geen probleem, want met &lsquo;good old&rsquo; software engineering komen we ver genoeg!</p>
+<p>In het <a href="https://github.com/tlaumen/ari/blob/543668f178c7c29efdbd784209bec6b19c882098/ari/classify_work.py#L50">ari pakket</a> zit een simpele router voor geotechnische berekeningen: welke berekening wil de gebruiker uitvoeren? 
+De gebruiker typt: &ldquo;reken de draagkracht uit bij cpt001&rdquo; en de LLM vertaalt dat naar één van vier opties: <code>PAALFUNDERING</code>, <code>STABILITEIT</code>, <code>ZETTINGEN</code> of <code>DAMWAND</code>. 
+Lukt dat niet, dan vraagt de LLM om verduidelijking. 
+Meer AI komt er niet kijken bij het maken van de berekening. </p>
+<h2>Context engineering: schaven aan de LLM response</h2>
+<p>De term &ldquo;prompt engineering&rdquo; is iets wat de meesten van jullie wel kennen: je prompt zo formuleren dat je het juiste antwoord krijgt. 
+Wanneer je AI in je systemen integreert gaat het om wat je de AI <em>als geheel</em> aanbiedt: de &lsquo;system prompt&rsquo;, de prompts van de gebruiker, relevante informatie, het invoerformaat en het uitvoerformaat.
+Deze context optimaal benutten wordt ook wel <a href="https://claude.ai/public/artifacts/f498a4cc-4c45-481c-a6dd-8e1d196dadb0">context engineering</a> genoemd.</p>
+<p>Nu zou je gewoon een van de vele <a href="https://code-b.dev/blog/python-frameworks-ai-agent">AI framework&rsquo;s</a> kunnen gebruiken om je AI te integreren, maar deze maken het <em>juist</em> lastig om je context te beheersen. 
+Dit wil je dus niet uitbesteden, <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md">&ldquo;own your prompts&rdquo;</a>!</p>
+<h3>BAML</h3>
+<p><a href="https://docs.boundaryml.com/home">BAML</a> is een <a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL</a> voor AI functies die het eenvoudig maakt om je context te beheersen.
+In plaats van losse &lsquo;promptstrings&rsquo; schrijf je functies met de invoer, uitvoer, structuur en informatie die optimaal werken. 
+BAML zorgt voor de koppeling met de LLM provider, fuzzy parsing (<a href="https://tokenmix.ai/blog/structured-output-json-guide">LLM&rsquo;s maken nog wel eens foutjes in het output schema</a>), retries en testbaarheid.</p>
+<p>Als voorbeeld kun je hier (een licht versimpelde) versie van de router voor geotechnische berekeningen vinden. 
+In de functie <code>ChooseWorkflow</code> wordt de LLM aangeroepen met in de &lsquo;system prompt&rsquo; alles tot <code>{{_.role("user")}}</code>.
+De &lsquo;user prompt&rsquo; bevat alles vanaf dit blok. 
+De input en output formats worden in het <code>{{ input }}</code> en het <code>{{ ctx.output_format }}</code> blok gestopt.</p>
+<div class="highlight" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><span style="color: #FF7B72">enum</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">Berekening</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">PAALFUNDERING</span>
+<span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">STABILITEIT</span>
+<span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">ZETTINGEN</span>
+<span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">DAMWAND</span>
+<span style="color: #E6EDF3">}</span>
+
+<span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">VerzoekVerduidelijking</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">  </span>intentie<span style="color: #6E7681"> </span><span style="color: #A5D6FF">&quot;Geef meer informatie&quot;</span>
+<span style="color: #6E7681">  </span>verzoek_tot_verduidelijking<span style="color: #6E7681"> </span><span style="color: #FF7B72">string</span>
+<span style="color: #E6EDF3">}</span>
+
+<span style="color: #FF7B72">function</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">ChooseWorkflow</span><span style="color: #E6EDF3">(</span>input<span style="color: #E6EDF3">:</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">string</span><span style="color: #E6EDF3">)</span><span style="color: #6E7681"> </span><span style="color: #FF7B72; font-weight: bold">-&gt;</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">Berekening</span><span style="color: #6E7681"> </span><span style="color: #FF7B72; font-weight: bold">|</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">VerzoekVerduidelijking</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">  </span><span style="color: #FF7B72">client</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">Claude4_5Haiku</span>
+<span style="color: #6E7681">  </span><span style="color: #FF7B72">prompt</span><span style="color: #6E7681"> </span>#<span style="color: #A5D6FF">&quot;</span>
+<span style="color: #A5D6FF">    {{ _.role(&quot;</span>system<span style="color: #A5D6FF">&quot;) }}</span>
+<span style="color: #A5D6FF">    Classificeer welk werk er uitgevoerd moet worden.</span>
+<span style="color: #A5D6FF">    Als de input onduidelijk is, geef je deze feedback terug aan de gebruiker.</span>
+<span style="color: #A5D6FF">    {{ ctx.output_format }}</span>
+
+<span style="color: #A5D6FF">    {{ _.role(&quot;</span>user<span style="color: #A5D6FF">&quot;) }}</span>
+<span style="color: #A5D6FF">    {{ input }}</span>
+<span style="color: #A5D6FF">  &quot;</span>#
+<span style="color: #E6EDF3">}</span>
+</pre></div>
+
+<p>Drie onderdelen van context engineering zijn hier zichtbaar:</p>
+<ul>
+<li>taakafbakening: de systeemprompt omschrijft exact wat de AI mag en niet mag doen. De gebruikersprompt wat de gebruiker van de LLM wil.</li>
+<li>input format: <code>input: string</code> is de enige input en gewoon tekst (string).</li>
+<li>output format: de <code>enum</code> en <code>class</code> definiëren wat een geldig antwoord is.</li>
+</ul>
+<p>Deze AI functie wordt door BAML in de praktijk omgezet naar de volgende API call richting de LLM provider:</p>
+<pre><code>&lt;system prompt&gt;
+  Classificeer welk werk er uitgevoerd moet worden.
+  Als de input onduidelijk is, geef je deze feedback terug aan de gebruiker.
+
+  Answer in JSON using any of these schemas:
+    'PAALFUNDERING' or 'STABILITEIT' or 'ZETTINGEN' or 'DAMWAND' or {
+      intentie: &quot;Geef meer informatie&quot;,
+      verzoek_tot_verduidelijking: string,
+    }
+&lt;/system prompt&gt;
+
+&lt;user prompt&gt;
+  prompt van de gebruiker
+&lt;/user prompt&gt;
+
+</code></pre>
+<h2>Evals: vertrouwen kwantificeren</h2>
+<p>Een AI functie schrijven is een ding, valideren dat ie werkt zoals verwacht is andere koek! 
+Evals zijn gestructureerde testcases: een input, een verwachte output en een check. 
+Deze check kan geautomatiseerd zijn (eenvoudig bij een router) waardoor het een soort unit test is. 
+Bij complexere AI functie kunnen ze ook door AI worden gecontrolleerd (<a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">LLM-as-judge</a>) of door een mens, <a href="https://gmauthority.com/blog/2023/12/gm-dealer-chat-bot-agrees-to-sell-2024-chevy-tahoe-for-1/">en dan hopelijk met meer dan alleen &lsquo;vibes&rsquo;</a>.</p>
+<p>Waarom heb je ze nodig? 
+Aangezien de LLM inherent probabilistisch is, wil je een toetsingskader hebben voor de betrouwbaarheid van je AI functie. 
+Ook zijn de modellen nog heel erg in ontwikkeling, <a href="https://openai.com/index/sycophancy-in-gpt-4o/">met significant afwijkend gedrag tot gevolg</a>, en dus wil je een test set hebben waarop je nieuwe modellen schaalbaar kan toetsen. </p>
+<p><em>Zonder evals zijn je gebruikers het proefkonijn.</em></p>
+<h3>BAML evals</h3>
+<p>Voor de eerder gebouwde AI functie is er een simpele set met evals geschreven.</p>
+<div class="highlight" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowPile</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">    </span>functions<span style="color: #6E7681"> </span><span style="color: #E6EDF3">[</span><span style="color: #F0883E; font-weight: bold">ChooseWorkflow</span><span style="color: #E6EDF3">]</span>
+<span style="color: #6E7681">    </span>args<span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">        </span>input<span style="color: #6E7681"> </span><span style="color: #A5D6FF">&quot;Ik wil graag een heipaal uitrekenen bij cpt001&quot;</span>
+<span style="color: #6E7681">    </span><span style="color: #E6EDF3">}</span>
+<span style="color: #6E7681">    </span><span style="color: #FF7B72; font-weight: bold">@@</span>assert<span style="color: #E6EDF3">(</span><span style="color: #7EE787">{{ this == &quot;PAALFUNDERING&quot; }}</span><span style="color: #E6EDF3">)</span>
+
+
+<span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowZetting</span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">    </span>functions<span style="color: #6E7681"> </span><span style="color: #E6EDF3">[</span><span style="color: #F0883E; font-weight: bold">ChooseWorkflow</span><span style="color: #E6EDF3">]</span>
+<span style="color: #6E7681">    </span>args<span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">        </span>input<span style="color: #6E7681"> </span><span style="color: #A5D6FF">&quot;Reken de zettingen uit bij cpt001&quot;</span>
+<span style="color: #6E7681">    </span><span style="color: #E6EDF3">}</span>
+<span style="color: #6E7681">    </span><span style="color: #FF7B72; font-weight: bold">@@</span>assert<span style="color: #E6EDF3">(</span><span style="color: #7EE787">{{ this == &quot;ZETTINGEN&quot; }}</span><span style="color: #E6EDF3">)</span>
+<span style="color: #E6EDF3">}</span>
+
+<span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowZetting2</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">    </span>functions<span style="color: #6E7681"> </span><span style="color: #E6EDF3">[</span><span style="color: #F0883E; font-weight: bold">ChooseWorkflow</span><span style="color: #E6EDF3">]</span>
+<span style="color: #6E7681">    </span>args<span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">        </span>input<span style="color: #6E7681"> </span><span style="color: #A5D6FF">&quot;Wat is de zakking ter plaatse van km 23.5?&quot;</span>
+<span style="color: #6E7681">    </span><span style="color: #E6EDF3">}</span>
+<span style="color: #6E7681">    </span><span style="color: #FF7B72; font-weight: bold">@@</span>assert<span style="color: #E6EDF3">(</span><span style="color: #7EE787">{{ this.intentie == &quot;Geef meer informatie&quot; }}</span><span style="color: #E6EDF3">)</span>
+<span style="color: #E6EDF3">}</span>
+
+<span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowStabiliteit</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">    </span>functions<span style="color: #6E7681"> </span><span style="color: #E6EDF3">[</span><span style="color: #F0883E; font-weight: bold">ChooseWorkflow</span><span style="color: #E6EDF3">]</span>
+<span style="color: #6E7681">    </span>args<span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">        </span>input<span style="color: #6E7681"> </span><span style="color: #A5D6FF">&quot;Reken de stbi uit bij de Dorpstraat in Krimpen aan de IJssel&quot;</span>
+<span style="color: #6E7681">    </span><span style="color: #E6EDF3">}</span>
+<span style="color: #6E7681">    </span><span style="color: #FF7B72; font-weight: bold">@@</span>assert<span style="color: #E6EDF3">(</span><span style="color: #7EE787">{{ this.intentie == &quot;Geef meer informatie&quot; }}</span><span style="color: #E6EDF3">)</span>
+<span style="color: #E6EDF3">}</span>
+
+<span style="color: #FF7B72">test</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">TestChooseWorkflowStabiliteit2</span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">    </span>functions<span style="color: #6E7681"> </span><span style="color: #E6EDF3">[</span><span style="color: #F0883E; font-weight: bold">ChooseWorkflow</span><span style="color: #E6EDF3">]</span>
+<span style="color: #6E7681">    </span>args<span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
+<span style="color: #6E7681">        </span>input<span style="color: #6E7681"> </span><span style="color: #A5D6FF">&quot;Hoe stabiel is de Lekdijk?&quot;</span>
+<span style="color: #6E7681">    </span><span style="color: #E6EDF3">}</span>
+<span style="color: #6E7681">    </span><span style="color: #FF7B72; font-weight: bold">@@</span>assert<span style="color: #E6EDF3">(</span><span style="color: #7EE787">{{ this.intentie == &quot;Geef meer informatie&quot; }}</span><span style="color: #E6EDF3">)</span>
+</pre></div>
+
+<p>Vier dingen die deze testcases illustreren:</p>
+<ul>
+<li>&ldquo;heipaal&rdquo; moet leiden naar <code>PAALFUNDERING</code>.</li>
+<li>&ldquo;zettingen&rdquo; moet leiden naar <code>ZETTINGEN</code>.</li>
+<li>&ldquo;zakking&rdquo; kan zetting betekenen maar is ook ambigue. De eval dwingt af dat de LLM om verduidelijking vraagt.</li>
+<li>&ldquo;stbi&rdquo; is een gangbare afkorting voor macrostabiliteit toets aan de binnendijkse zijde. Er is echter ook een verwijzing naar data die niet meegegeven is (namelijk de Dorpstraat in Krimpen aan de IJssel). De eval toetst of de AI dit herkent als onvolledig in plaats van als stabiliteitsberekening.</li>
+<li>&ldquo;Hoe stabiel is de Lekdijk?&rdquo; klinkt als een stabiliteitsvraag, maar is te vaag om een berekening mee te starten. De eval toetst of de AI die grens respecteert.</li>
+</ul>
+<p>Met een aanpak vergelijkbaar met <a href="https://en.wikipedia.org/wiki/Test-driven_development">TDD</a> kun je op deze manier eerst je testgevallen met hun gewenste resultaat opstellen.
+Vervolgens &lsquo;engineer&rsquo; je het <code>context window</code> totdat je krijgt wat je verwacht. In BAML gaat dit eenvoudig met hun <a href="https://www.promptfiddle.com/embed?id=BAML-Examples-IiugE">prompt fiddle</a>. </p>
+<h2>Op weg naar betrouwbare AI functies</h2>
+<p>Met het toepassen van je LLM als router waar mogelijk, de context van de modellen &lsquo;engineeren&rsquo; en evals als validatie, ben je in controle met het ontwikkelen van je AI functies. Zo bouw je stap voor stap aan betrouwbare AI workflow.</p>
+    </div>
+
+    <p class="blog-footer">Waarom (alleen) chat niet werkt</p>
+  </article>
+</body>
+</html>
