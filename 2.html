@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Betrouwbare 'AI functies'</title>
+  <title>Betrouwbare 'AI-functies'</title>
   <style>
     :root {
       --text-primary: #F0F0F0;
@@ -192,7 +192,7 @@
   <article class="blog">
 
     <span class="tag">AI met een bouwhelm op</span>
-<h1 class="blog-title">Betrouwbare 'AI functies'</h1>
+<h1 class="blog-title">Betrouwbare 'AI-functies'</h1>
 
     <div class="meta"><span>Tom Laumen</span><span class="meta-dot"></span><span>3 mei 2026</span><span class="meta-dot"></span><span>6 min lezen</span></div>
 
@@ -202,7 +202,7 @@
 </blockquote>
 <h2>Introductie</h2>
 <p>LLM&rsquo;s zijn krachtig maar onvoorspelbaar. In de <a href="https://ari.engineer/blog/1">vorige blog</a> kozen we daarom voor een beperkte scope: AI alleen waar het waarde toevoegt én je de controle kunt loslaten. 
-De vervolgvraag is dan: hoe maak je die AI-functies dan betrouwbaar?</p>
+De vervolgvraag is dan: hoe maak je die AI-functies betrouwbaar?</p>
 <p>Dat is allesbehalve vanzelfsprekend. 
 LLM&rsquo;s zijn inherent probabilistisch en de nauwkeurigheid neemt snel af naarmate de context groeit (<a href="https://www.trychroma.com/research/context-rot">context rot</a>). 
 Drie concepten vormen het antwoord: routing, context engineering en evals.</p>
@@ -212,9 +212,9 @@ Er wordt dus niet gekeken <em>hoe</em> de berekening gemaakt wordt, maar <em>wel
 <p>In het <a href="https://github.com/tlaumen/ari/blob/543668f178c7c29efdbd784209bec6b19c882098/ari/classify_work.py#L50">ari pakket</a> zit een eenvoudige router voor geotechnische berekeningen. De gebruiker typt: &ldquo;reken de draagkracht uit bij cpt001&rdquo; en de LLM vertaalt dat naar <code>PAALFUNDERING</code>, <code>STABILITEIT</code>, <code>ZETTINGEN</code> of <code>DAMWAND</code>. Lukt dat niet, dan vraagt de LLM om verduidelijking. Meer AI komt er niet aan te pas.</p>
 <p>Maar een goede router staat of valt met wat je het model meegeeft. Dat is context engineering.</p>
 <h2>Context engineering: schaven aan de LLM response</h2>
-<p>Wanneer je AI integreert, zijn er een boel knoppen waar je aan kan draaien: de system prompt, gebruikersinput, relevante informatie en het output format. Dit geheel optimaliseren heet <a href="https://claude.ai/public/artifacts/f498a4cc-4c45-481c-a6dd-8e1d196dadb0">context engineering</a>. 
+<p>Wanneer je AI integreert, zijn er een boel knoppen waar je aan kunt draaien: de system prompt, gebruikersinput, relevante informatie en het output format. Dit geheel optimaliseren heet <a href="https://claude.ai/public/artifacts/f498a4cc-4c45-481c-a6dd-8e1d196dadb0">context engineering</a>. 
 Gebruik geen <a href="https://code-b.dev/blog/python-frameworks-ai-agent">AI framework</a> om dit te doen, want die maken het juist lastig om je context te beheersen. <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md">&ldquo;Own your prompts&rdquo;</a>.</p>
-<p>Een framework specifiek ontwikkeld voor dit probleem in BAML.</p>
+<p>Een framework specifiek ontwikkeld voor dit probleem is BAML.</p>
 <h3>BAML</h3>
 <p><a href="https://docs.boundaryml.com/home">BAML</a> is een <a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL</a> voor AI-functies. In plaats van losse promptstrings in je codebase, schrijf je functies met invoer, uitvoer en structuur. BAML regelt de koppeling met de LLM-provider, <a href="https://boundaryml.com/blog/schema-aligned-parsing">schema aligned parsing</a> en testbaarheid.</p>
 <p>Hieronder de geotechnische router functie in BAML, met:</p>
@@ -268,7 +268,7 @@ Gebruik geen <a href="https://code-b.dev/blog/python-frameworks-ai-agent">AI fra
 </code></pre>
 <p>Of die context ook echt werkt, weet je pas als je het meet. Dat zijn evals.</p>
 <h2>Evals: vertrouwen kwantificeren</h2>
-<p>Evals zijn gestructureerde testcases: een input, een verwachte output en een check. 
+<p>Evals zijn tests: een input, een verwachte output en een check. 
 Bij een router is dat volledig te automatiseren, vergelijkbaar met een unit test. 
 Bij complexere functies kun je <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">LLM-as-judge</a> inzetten, of een mens (<a href="https://gmauthority.com/blog/2023/12/gm-dealer-chat-bot-agrees-to-sell-2024-chevy-tahoe-for-1/">liefst met meer dan alleen &lsquo;vibes&rsquo;</a>).</p>
 <p>Evals zijn onmisbaar omdat LLM&rsquo;s probabilistisch zijn én <a href="https://openai.com/index/sycophancy-in-gpt-4o/">soms significant afwijkend gedrag vertonen</a> na een modelupdate. </p>
@@ -317,11 +317,13 @@ Bij complexere functies kun je <a href="https://www.anthropic.com/engineering/de
 </pre></div>
 
 <p>De cases testen de grenzen van de router: eenduidige invoer (&ldquo;heipaal&rdquo;, &ldquo;zettingen&rdquo;), ambigue termen (&ldquo;zakking&rdquo;), onvolledige context (&ldquo;stbi&rdquo; zonder locatiedata) en vragen die te vaag zijn om een berekening mee te starten. </p>
-<p>Met een aanpak vergelijkbaar met <a href="https://en.wikipedia.org/wiki/Test-driven_development">TDD</a> stel je eerst je test gevallen op, en vervolgens engineer je de context totdat alles klopt. 
-Met de <a href="https://www.promptfiddle.com/embed?id=BAML-Examples-IiugE">prompt fiddle</a> van BAML kan dit envoudig.</p>
-<h2>Op weg naar betrouwbare AI functies</h2>
+<p>Met een aanpak vergelijkbaar met <a href="https://en.wikipedia.org/wiki/Test-driven_development">TDD</a> stel je eerst je testgevallen op, en vervolgens engineer je de context totdat alles klopt. 
+Met de <a href="https://www.promptfiddle.com/embed?id=BAML-Examples-IiugE">prompt fiddle</a> van BAML kun je zo eenvoudig schaven aan je AI-functies.</p>
+<h2>Op weg naar betrouwbare AI-functies</h2>
 <p>Routing waar mogelijk, context zorgvuldig inrichten, evals als toetssteen. Zo bouw je stap voor stap aan AI-functies waar je op kunt bouwen. 
 En als je fan bent van &lsquo;prompt optimizers&rsquo;, ga dan vooral los in de <a href="https://www.linkedin.com/company/ari-engineer/">LinkedIn comments</a>!</p>
+<p>De volgende post gaat in op waarom (alleen) chat niet werkt. </p>
+<p>P.S.: De codebase van ari is <a href="https://github.com/tlaumen/ari">opensource</a>.</p>
     </div>
 
     <p class="blog-footer">Waarom (alleen) chat niet werkt</p>
