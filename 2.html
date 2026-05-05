@@ -201,18 +201,27 @@
 <p>&ldquo;Imagine if an API failed 5% of the time. Most engineers would drop everything and fix it. Yet when LLMs fail at the same rate, we shrug it off and call it acceptable.&rdquo; &ndash; Vaibhav Gupta (BAML)</p>
 </blockquote>
 <h2>Introductie</h2>
-<p>LLM&rsquo;s zijn krachtig maar onvoorspelbaar. In de <a href="https://ari.engineer/blog/1">vorige blog</a> kozen we daarom voor een beperkte scope: AI alleen waar het waarde toevoegt én je de controle kunt loslaten. De vraag vervolgvraag is dan: hoe maak je die AI-functies dan betrouwbaar?</p>
-<p>Dat is allesbehalve vanzelfsprekend. LLM&rsquo;s zijn inherent probabilistisch en de nauwkeurigheid neemt snel af naarmate de context groeit (<a href="https://www.trychroma.com/research/context-rot">context rot</a>). Drie concepten vormen het antwoord: routing, context engineering en evals.</p>
+<p>LLM&rsquo;s zijn krachtig maar onvoorspelbaar. In de <a href="https://ari.engineer/blog/1">vorige blog</a> kozen we daarom voor een beperkte scope: AI alleen waar het waarde toevoegt én je de controle kunt loslaten. 
+De vervolgvraag is dan: hoe maak je die AI-functies dan betrouwbaar?</p>
+<p>Dat is allesbehalve vanzelfsprekend. 
+LLM&rsquo;s zijn inherent probabilistisch en de nauwkeurigheid neemt snel af naarmate de context groeit (<a href="https://www.trychroma.com/research/context-rot">context rot</a>). 
+Drie concepten vormen het antwoord: routing, context engineering en evals.</p>
 <h2>Routing: het kleinste zinvolle begin</h2>
-<p>Routing is de eenvoudigste vorm van AI in een workflow: de LLM classificeert de input en bepaalt welke workflow wordt uitgevoerd. Er wordt dus niet <em>hoe</em> de berekening gedaan wordt, maar <em>welke</em>. Zo behoud je maximale controle: <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md">&ldquo;own your control flow&rdquo;</a>.</p>
+<p>Routing is de eenvoudigste vorm van AI in een workflow: de LLM classificeert de input en bepaalt welke workflow wordt uitgevoerd. 
+Er wordt dus niet gekeken <em>hoe</em> de berekening gemaakt wordt, maar <em>welke</em>. Zo behoud je maximale controle: <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-08-own-your-control-flow.md">&ldquo;own your control flow&rdquo;</a>.</p>
 <p>In het <a href="https://github.com/tlaumen/ari/blob/543668f178c7c29efdbd784209bec6b19c882098/ari/classify_work.py#L50">ari pakket</a> zit een eenvoudige router voor geotechnische berekeningen. De gebruiker typt: &ldquo;reken de draagkracht uit bij cpt001&rdquo; en de LLM vertaalt dat naar <code>PAALFUNDERING</code>, <code>STABILITEIT</code>, <code>ZETTINGEN</code> of <code>DAMWAND</code>. Lukt dat niet, dan vraagt de LLM om verduidelijking. Meer AI komt er niet aan te pas.</p>
 <p>Maar een goede router staat of valt met wat je het model meegeeft. Dat is context engineering.</p>
 <h2>Context engineering: schaven aan de LLM response</h2>
 <p>Wanneer je AI integreert, zijn er een boel knoppen waar je aan kan draaien: de system prompt, gebruikersinput, relevante informatie en het output format. Dit geheel optimaliseren heet <a href="https://claude.ai/public/artifacts/f498a4cc-4c45-481c-a6dd-8e1d196dadb0">context engineering</a>. 
 Gebruik geen <a href="https://code-b.dev/blog/python-frameworks-ai-agent">AI framework</a> om dit te doen, want die maken het juist lastig om je context te beheersen. <a href="https://github.com/humanlayer/12-factor-agents/blob/main/content/factor-02-own-your-prompts.md">&ldquo;Own your prompts&rdquo;</a>.</p>
+<p>Een framework specifiek ontwikkeld voor dit probleem in BAML.</p>
 <h3>BAML</h3>
 <p><a href="https://docs.boundaryml.com/home">BAML</a> is een <a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL</a> voor AI-functies. In plaats van losse promptstrings in je codebase, schrijf je functies met invoer, uitvoer en structuur. BAML regelt de koppeling met de LLM-provider, <a href="https://boundaryml.com/blog/schema-aligned-parsing">schema aligned parsing</a> en testbaarheid.</p>
-<p>Hieronder de geotechnische router. Alles tot <code>{{_.role("user")}}</code> is de system prompt, alles erna de user prompt. De objecten <code>Berekening</code> en <code>VerzoekVerduidelijking</code> worden in <code>{{ ctx.output_format }}</code> in de context geplaatst en bepalen het output format.</p>
+<p>Hieronder de geotechnische router functie in BAML met:
+- de system prompt: tussen <code>{{_.role("system")}}</code> en <code>{{_.role("user")}}</code>
+- de user prompt: vanaf <code>{{_.role("user")}}</code> 
+- het output format (<code>Berekening</code> en <code>VerzoekVerduidelijking</code>): <code>{{ ctx.output_format }}</code>
+- de prompt gebruiker: <code>{{ input }}</code></p>
 <div class="highlight" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><span style="color: #FF7B72">enum</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">Berekening</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
 <span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">PAALFUNDERING</span>
 <span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">STABILITEIT</span>
@@ -260,7 +269,7 @@ Gebruik geen <a href="https://code-b.dev/blog/python-frameworks-ai-agent">AI fra
 <p>Evals zijn gestructureerde testcases: een input, een verwachte output en een check. 
 Bij een router is dat volledig te automatiseren, vergelijkbaar met een unit test. 
 Bij complexere functies kun je <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">LLM-as-judge</a> inzetten, of een mens (<a href="https://gmauthority.com/blog/2023/12/gm-dealer-chat-bot-agrees-to-sell-2024-chevy-tahoe-for-1/">liefst met meer dan alleen &lsquo;vibes&rsquo;</a>).</p>
-<p>Ze zijn onmisbaar omdat LLM&rsquo;s probabilistisch zijn én <a href="https://openai.com/index/sycophancy-in-gpt-4o/">soms significant afwijkend gedrag vertonen</a> na een modelupdate. </p>
+<p>Evals zijn onmisbaar omdat LLM&rsquo;s probabilistisch zijn én <a href="https://openai.com/index/sycophancy-in-gpt-4o/">soms significant afwijkend gedrag vertonen</a> na een modelupdate. </p>
 <p><em>En zonder evals zijn je gebruikers het proefkonijn.</em></p>
 <h3>BAML evals</h3>
 <p>Vijf gevallen die samen de grenzen aftasten: van eenduidige invoer tot vragen die te vaag zijn om een berekening mee te starten.</p>
