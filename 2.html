@@ -217,11 +217,13 @@ Gebruik geen <a href="https://code-b.dev/blog/python-frameworks-ai-agent">AI fra
 <p>Een framework specifiek ontwikkeld voor dit probleem in BAML.</p>
 <h3>BAML</h3>
 <p><a href="https://docs.boundaryml.com/home">BAML</a> is een <a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL</a> voor AI-functies. In plaats van losse promptstrings in je codebase, schrijf je functies met invoer, uitvoer en structuur. BAML regelt de koppeling met de LLM-provider, <a href="https://boundaryml.com/blog/schema-aligned-parsing">schema aligned parsing</a> en testbaarheid.</p>
-<p>Hieronder de geotechnische router functie in BAML met:
-- de system prompt: tussen <code>{{_.role("system")}}</code> en <code>{{_.role("user")}}</code>
-- de user prompt: vanaf <code>{{_.role("user")}}</code> 
-- het output format (<code>Berekening</code> en <code>VerzoekVerduidelijking</code>): <code>{{ ctx.output_format }}</code>
-- de prompt gebruiker: <code>{{ input }}</code></p>
+<p>Hieronder de geotechnische router functie in BAML met:</p>
+<ul>
+<li>de system prompt: tussen <code>{{_.role("system")}}</code> en <code>{{_.role("user")}}</code></li>
+<li>de user prompt: vanaf <code>{{_.role("user")}}</code> </li>
+<li>het output format (<code>Berekening</code> en <code>VerzoekVerduidelijking</code>): <code>{{ ctx.output_format }}</code></li>
+<li>de prompt gebruiker: <code>{{ input }}</code></li>
+</ul>
 <div class="highlight" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><span style="color: #FF7B72">enum</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">Berekening</span><span style="color: #6E7681"> </span><span style="color: #E6EDF3">{</span>
 <span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">PAALFUNDERING</span>
 <span style="color: #6E7681">    </span><span style="color: #F0883E; font-weight: bold">STABILITEIT</span>
