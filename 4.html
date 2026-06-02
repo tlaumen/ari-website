@@ -206,8 +206,9 @@
 <li>maak AI functies betrouwbaar met routing, context en evals</li>
 <li>begin klein en verzamel data uit echt gebruik</li>
 </ul>
-<p>Dat klinkt logisch. Maar hoe ziet het eruit als je het bouwt?</p>
-<p>In dit blog maken we een eerste workflow met <a href="https://github.com/tlaumen/ari">ari-core</a>. We bouwen hem eerst lokaal en delen hem daarna via een webapp.</p>
+<p>Allemaal goed en wel, maar hoe bouw je zoiets nou daadwerkelijk?!</p>
+<p>In dit blog maken we een eerste workflow met <a href="https://github.com/tlaumen/ari">ari-core</a>. 
+We bouwen hem eerst lokaal en delen hem daarna via een webapp in <a href="https://brugnaarai.nl">de demo omgeving</a>.</p>
 <p>Als voorbeeld maken we een (uitgekleedde) stabiliteitsberekening. De berekening zelf wil je niet door een taalmodel laten verzinnen, die moet reproduceerbaar zijn. Maar een taalmodel kan wél helpen met een eerste rapporttekst.</p>
 <h2>Waarom het ARI framework?</h2>
 <p>Jacob Lauritzen van Legora vatte het goed samen:</p>
@@ -216,7 +217,9 @@
 </blockquote>
 <p>In onze wereld is dit direct herkenbaar. Je kan aan een AI vragen: &ldquo;maak een stabiliteitsrapport&rdquo;. Dan krijg je waarschijnlijk een uiteenzetting die er goed uitziet. Maar hoe is de berekening gedaan? Welke parameters zijn gebruikt? En hoe kun jij eenvoudig controleren of dit klopt en bijsturen als dat niet zo is?</p>
 <p>Met een workflow maken we die stappen expliciet.</p>
-<p>Niet alles wordt AI. De berekening blijft code. De rapporttekst mag AI zijn. De controle blijft bij de ingenieur.</p>
+<p>Niet alles wordt AI. 
+De berekening blijft code en als startpunt mag AI helpen met tekstverwerking. 
+En waar er zaken geautomatiseerd of met AI worden uitgevoerd, zorgen de primitieven in <code>ari-core</code> ervoor dat de gebruiker op een intuitieve wijze invloed op kan uitoefenen op waar de uitkomst. De controle blijft bij de ingenieur.</p>
 <h2>Wat gaan we bouwen?</h2>
 <p>We bouwen een versimpelde workflow voor een stabiliteitsberekening:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>Grondprofiel invoeren
@@ -232,7 +235,7 @@ Conceptrapport schrijven
 Feedback van de gebruiker verwerken
 </code></pre></div>
 
-<p>De veiligheidsfactor komt uit een open-source Pythonpakket voor stabiliteit. Zo blijft de tutorial bruikbaar voor iedereen, dus even geen D-Stability, Slope/W of andere commerciële software. De rapporttekst komt uit een AI-functie. De ingenieur geeft vervolgens feedback om de rapportage te verbeteren.</p>
+<p>De stabiliteitsberekening komt uit een open-source Pythonpakket voor stabiliteit. Zo blijft de tutorial bruikbaar voor iedereen, dus even geen D-Stability, Slope/W of andere commerciële software. De rapporttekst komt uit een AI-functie. De ingenieur geeft vervolgens feedback om de rapportage te verbeteren wat de LLM weer gebruikt.</p>
 <p>Aan het einde pushen we de workflow naar een demo-omgeving:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>ari<span style="color: #6E7681"> </span>demo-push
 </code></pre></div>
@@ -248,7 +251,8 @@ Feedback van de gebruiker verwerken
 </code></pre></div>
 
 <p>Daarna werk je verder in <code>workflow.py</code>.</p>
-<p>Een AI coding agent kan hier goed bij helpen. ARI projecten bevatten een <code>LLM_GUIDE.md</code>, zodat een agent de structuur van het project begrijpt en je kan helpen.</p>
+<p>Een AI coding agent kan hier goed bij helpen. 
+ARI projecten bevatten een <code>LLM_GUIDE.md</code>, zodat een agent de structuur van het project begrijpt en je kan ondersteunen.</p>
 <h2>De bouwstenen</h2>
 <p>Een ARI workflow bestaat uit drie simpele onderdelen.</p>
 <p>Een <code>DataModel</code> beschrijft de data die door je workflow stroomt. Denk aan grondlagen, parameters, geometrie, rekenresultaten of rapporttekst.</p>
@@ -278,8 +282,8 @@ NAP +5.0 m tot NAP +1.0 m: zand
 NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 </code></pre></div>
 
-<p>Deze step produceert <code>grondprofiel</code> en bewaart dat in <code>Table.WORKFLOW</code>. Het grondprofiel is nodig binnen deze berekening, maar is in deze demo nog geen projectgegeven dat we over meerdere runs bewaren.</p>
-<p>In ARI maken we hier eerst getypeerde data van. De helper <code>as_float(...)</code> houdt de conversie uit de weg, zodat de ARI-primitives zichtbaar blijven: <code>prompt(...)</code>, <code>confirm(...)</code>, <code>DataModel</code> en <code>ctx[...]</code>.</p>
+<p>Deze step produceert <code>grondprofiel</code> en bewaart dat in <code>Table.WORKFLOW</code>.</p>
+<p>De helper <code>as_float(...)</code> maakt de conversie van tekst met eventueel een komma naar een floating point getal.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
 
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
@@ -340,7 +344,6 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
         <span style="color: #E6EDF3">)</span>
 </code></pre></div>
 
-<p>De helper <code>as_float(...)</code> maakt de conversie van tekst met eventueel een komma naar een floating point getal.</p>
 <h2>Stap 2 — Parameters invoeren</h2>
 <p>Vervolgens moeten we de materiaalparameters opgeven per grondsoort. In een projectcontext haal je dit bijvoorbeeld uit een uitgangspuntennotitie. Voor een enkele berekening kan de ingenieur zelf een inschatting geven op basis van grondonderzoek, historische data en engineering judgement.</p>
 <p>Voor het uitrekenen van de stabiliteit rekenen we met het Mohr-Coulomb sterkte model. De parameters zijn dan:</p>
@@ -402,7 +405,7 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 <li>uit een gestandaardiseerde spreadsheet inlezen</li>
 <li>zelf tekenen, bijvoorbeeld bij een stabiliteitsmaatregel in het dijkontwerp</li>
 </ul>
-<p>In deze demo voeren we de geometrie in als puntenlijst via een <code>prompt(...)</code> en zetten die daarna om naar workflowdata.</p>
+<p>Om de demo echter simpel te houden, voeren we de geometrie hier even in als puntenlijst via een <code>prompt(...)</code> en zetten die daarna om naar workflowdata.</p>
 <p>De helper <code>parse_geometriepunten(...)</code> houdt de string-parsing buiten de step-logica. De volledige helper staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij dit artikel</a>.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
 
@@ -448,7 +451,7 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 </code></pre></div>
 
 <h2>Stap 4 — Stabiliteitsberekening uitvoeren</h2>
-<p>We nemen aan dat we geen constructies, maaiveldbelastingen of andere externe belastingen meenemen. Daarmee kunnen we nu een simpele stabiliteitsberekening maken.</p>
+<p>We nemen aan dat we er geen constructies, maaiveldbelastingen of andere externe belastingen zijn. Daarmee kunnen we nu een simpele stabiliteitsberekening maken.</p>
 <p>De workflow gebruikt het grondprofiel, de materiaalparameters en de geometrie als input voor een open-source Pythonpakket dat de stabiliteit berekent. Dit is onconventioneel, maar betekent wel dat ook mensen zonder geïnstalleerde geotechnische software deze tutorial mee kunnen doen.</p>
 <p>De uitkomst bestaat hier uit:</p>
 <ul>
@@ -456,7 +459,7 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 <li>middelpunt en straal van de maatgevende glijcirkel</li>
 </ul>
 <p>De helper <code>build_slope_data(...)</code> zet de workflowdata om naar het formaat van de rekenkern. <code>run_analysis(...)</code> voert de xslope-analyse uit en geeft de maatgevende resultaten terug. De volledige implementatie staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij dit artikel</a>.</p>
-<p>Nu kunnen we eenvoudig en overzichtelijk een step maken die de berekening uitvoert. Omdat we in deze step geen AI gebruiken maar gewone rekensoftware, hoeven we ons geen zorgen te maken dat een taalmodel de veiligheidsfactor verzint.</p>
+<p>Nu kunnen we eenvoudig en overzichtelijk een step maken die de berekening uitvoert. Omdat we in deze step geen AI gebruiken maar gewone rekensoftware, hoeven we ons geen zorgen te maken dat een taalmodel de stabiliteitsberekening verkeerd uitvoerd.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
 
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
@@ -474,33 +477,6 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
     <span style="color: #E6EDF3">maatgevende_cirkel_x0:</span> <span style="color: #E6EDF3">float</span>
     <span style="color: #E6EDF3">maatgevende_cirkel_y0:</span> <span style="color: #E6EDF3">float</span>
     <span style="color: #E6EDF3">maatgevende_cirkel_r:</span> <span style="color: #E6EDF3">float</span>
-
-
-<span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">SlipcircleViewerComponent</span><span style="color: #E6EDF3">:</span>
-    <span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">__init__</span><span style="color: #E6EDF3">(self,</span> <span style="color: #E6EDF3">image_base64:</span> <span style="color: #E6EDF3">str,</span> <span style="color: #E6EDF3">veiligheidsfactor:</span> <span style="color: #E6EDF3">float)</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #79C0FF">None</span><span style="color: #E6EDF3">:</span>
-        <span style="color: #E6EDF3">self</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">image_base64</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">image_base64</span>
-        <span style="color: #E6EDF3">self</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">veiligheidsfactor</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">veiligheidsfactor</span>
-
-    <span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">render_html</span><span style="color: #E6EDF3">(self)</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #E6EDF3">str:</span>
-        <span style="color: #FF7B72">return</span> <span style="color: #79C0FF">f</span><span style="color: #A5D6FF">&quot;&quot;&quot;</span>
-<span style="color: #A5D6FF">        &lt;div style=&#39;font-family: sans-serif; max-width: 1000px; margin: 0 auto;&#39;&gt;</span>
-<span style="color: #A5D6FF">          &lt;h3&gt;Maatgevende glijcirkel&lt;/h3&gt;</span>
-<span style="color: #A5D6FF">          &lt;p&gt;Veiligheidsfactor (Bishop): &lt;strong&gt;{</span><span style="color: #E6EDF3">self</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">veiligheidsfactor</span><span style="color: #A5D6FF">:.3f}&lt;/strong&gt;&lt;/p&gt;</span>
-<span style="color: #A5D6FF">          &lt;img</span>
-<span style="color: #A5D6FF">            src=&#39;data:image/png;base64,{</span><span style="color: #E6EDF3">self</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">image_base64</span><span style="color: #A5D6FF">}&#39;</span>
-<span style="color: #A5D6FF">            alt=&#39;Maatgevende glijcirkel&#39;</span>
-<span style="color: #A5D6FF">            style=&#39;max-width: 100%; border: 1px solid #ddd; border-radius: 8px;&#39;</span>
-<span style="color: #A5D6FF">          /&gt;</span>
-<span style="color: #A5D6FF">          &lt;div style=&#39;margin-top: 12px;&#39;&gt;</span>
-<span style="color: #A5D6FF">            &lt;button id=&#39;verder&#39;&gt;Verder&lt;/button&gt;</span>
-<span style="color: #A5D6FF">          &lt;/div&gt;</span>
-<span style="color: #A5D6FF">        &lt;/div&gt;</span>
-<span style="color: #A5D6FF">        &lt;script&gt;</span>
-<span style="color: #A5D6FF">          document.getElementById(&#39;verder&#39;).addEventListener(&#39;click&#39;, function () </span><span style="color: #79C0FF">{{</span>
-<span style="color: #A5D6FF">            window.parent.postMessage(</span><span style="color: #79C0FF">{{</span><span style="color: #A5D6FF"> value: true, summary: &#39;Glijcirkel bekeken&#39; </span><span style="color: #79C0FF">}}</span><span style="color: #A5D6FF">, &#39;*&#39;);</span>
-<span style="color: #A5D6FF">          </span><span style="color: #79C0FF">}}</span><span style="color: #A5D6FF">);</span>
-<span style="color: #A5D6FF">        &lt;/script&gt;</span>
-<span style="color: #A5D6FF">        &quot;&quot;&quot;</span>
 
 
 <span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">BerekenStabiliteitStep</span><span style="color: #E6EDF3">(Step):</span>
@@ -538,16 +514,16 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 
 <h2>Stap 5 — Conceptrapport genereren</h2>
 <p>Met de berekening gemaakt kunnen we er een rapport van schrijven, hoewel we normaal natuurlijk veel meer berekeningen zouden maken om gevoel te krijgen voor het probleem.</p>
-<p>Het rapporteren is nu overzichtelijk, want we:</p>
+<p>Het rapporteren is nu overzichtelijk probleem, want we:</p>
 <ul>
 <li>hebben alle data gestructureerd opgeslagen</li>
-<li>kennen de aannames die zijn meegenomen in de berekening</li>
+<li>zijn expliciet betrokken in de aannames voor de berekening</li>
 <li>hebben een simpele interface om een AI-functie aan te roepen die het rapport voor ons schrijft</li>
 </ul>
-<p>We hoeven ons vervolgens vooral druk te maken dat we de <a href="https://ari.engineer/blog/2">context voor het model goed benutten</a>.</p>
+<p>We hoeven ons enkel nog druk te maken dat we de <a href="https://ari.engineer/blog/2">context van het model goed benutten</a>.</p>
 <p>De helper <code>genereer_rapport(...)</code> maakt de rapporttekst in markdown op basis van de gestructureerde invoer. De volledige implementatie staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij dit artikel</a>. Later gebruiken we dezelfde helper opnieuw met feedbackpunten.</p>
-<p>Met <code>ui(DocumentViewer(...))</code> tonen we het markdownrapport in de browser. Dat werkt dus niet alleen lokaal in de CLI, maar ook in de demo-omgeving.</p>
-<p>Let wel op: je moet zelf je API key in de <code>.env</code> laden. Hiervoor zijn een paar API&rsquo;s van modelproviders toegevoegd aan de <code>genereer_rapport(...)</code> functie. Maar deze keys moet je niet naar de demo-omgeving pushen.</p>
+<p>Met <code>ui(DocumentViewer(...))</code> tonen we het markdownrapport in de browser. Dat werkt dus niet alleen lokaal, maar ook in de demo-omgeving.</p>
+<p>Let wel op: je moet zelf je API key van de modelprovider in de <code>.env</code> laden. Hiervoor zijn een paar API&rsquo;s van modelproviders toegevoegd aan de <code>genereer_rapport(...)</code> functie. Pas echter op dat je deze key niet naar de demo-omgeving pushed.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
 
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
@@ -684,7 +660,7 @@ daarna controleren
 
 <h2>Segment registreren</h2>
 <p>Nu hebben we zes <code>Step</code>-klassen gedefinieerd. Deze komen samen in een <code>Segment</code> en een <code>SegmentRegistry</code>.
-Om de implementatie voor de tutorial simpel te houden maken we er een <code>Segment</code> van, hoewel we dit in de praktijk waarschijnlijk overal waar we vertakken, zoals ook benoemd in dit blog, zouden kunnen/willen opknippen.
+Om de implementatie voor de tutorial simpel te houden maken we er een <code>Segment</code> van, hoewel we dit in de praktijk waarschijnlijk overal waar er meerdere opties zijn voor de input, zoals ook benoemd in dit blog, zouden kunnen/willen opknippen.
 Een <code>Segment</code> hoort in een <code>SegmentRegistry</code> waarvan elke applicatie er een heeft. Ook geven we het een naam en beschrijving mee zodat het eenvoudig te herkennen is wat het doet.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>VoerGrondprofielIn
 VoerParametersIn
@@ -730,12 +706,12 @@ Nu kun je je workflow(s) lokaal runnen met:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>python<span style="color: #6E7681"> </span>main.py
 </code></pre></div>
 
-<p>Dat is goed om te bouwen. Maar het is niet genoeg voor adoptie. Een workflow wordt pas interessant als collega&rsquo;s hem kunnen proberen zonder je codebase te kennen.</p>
-<p>Daarvoor is er de demo-omgeving (toegang aanvragen, <em>zie einde blog</em>):</p>
+<p>Dat is goed om te bouwen. Maar het wordt pas echt interessant als je de workflows met collega&rsquo;s kan delen.</p>
+<p>Hiervoor is er een demo omgeving gemaakt (toegang aanvragen, <em>zie einde blog</em>):</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>ari<span style="color: #6E7681"> </span>demo-push
 </code></pre></div>
 
-<p>ARI publiceert de workflow naar een browseromgeving.</p>
+<p>ARI publiceert de workflow naar een apart platform wat de web app host.</p>
 <h2>Je eerste workflow!</h2>
 <p>Dit was alles wat je nodig hebt om <code>ari-core</code> eens uit te proberen!</p>
 <p>Je hebt een workflow die:</p>
@@ -746,12 +722,12 @@ Nu kun je je workflow(s) lokaal runnen met:</p>
 <li>menselijke feedback vastlegt</li>
 <li>naar een browserdemo gepusht kan worden</li>
 </ul>
-<p>Bouw deze versie, speel met andere primitieven en zie hoe makkelijk je iets bouwt en kan delen met anderen!</p>
+<p>Bouw deze versie, probeer de verschillende <code>ari-core</code> primitieven uit en zie hoe makkelijk je iets bouwt en kan delen met anderen!</p>
 <p>De volledige implementatie van deze basisworkflow staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij deze post</a>. Daar vind je ook de helperfuncties voor de stabiliteitsberekening en de rapportgenerator.</p>
-<p><strong>Vraag toegang aan via <a href="https://brugnaarai.nl">brugnaarai.nl</a> →</strong></p>
-<p>Voor een meer realistisch voorbeeld moeten we dieper ingaan op een aantal kernconcepten die deze blog te lang zouden maken. 
-Hier komen we in het volgende blog op terug!</p>
-<p>Heb je vragen of wil je sparren over een specifieke workflow? Reageer op <a href="https://www.linkedin.com/company/ari">LinkedIn</a> of met een issue op <a href="https://github.com/tlaumen/ARI/issues">ari-core</a>.</p>
+<p>Wil je toegang om je workflow te delen met anderen? <strong>Vraag toegang aan via <a href="https://brugnaarai.nl">brugnaarai.nl</a>.</strong></p>
+<p>Deze workflow is momenteel nog te rudimentair om echt goede gebruikers interactie te hebben. Hier komen we in het volgende blog op terug!</p>
+<p>Heb je vragen of wil je sparren over een specifieke workflow? 
+Reageer op <a href="https://www.linkedin.com/company/ari">LinkedIn</a>, maak een issue op <a href="https://github.com/tlaumen/ARI/issues">ari-core</a> of neem contact met mij op via tom@ari.engineer.</p>
     </div>
 
   </article>
