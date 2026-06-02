@@ -207,14 +207,14 @@
 <li>begin klein en verzamel data uit echt gebruik</li>
 </ul>
 <p>Dat klinkt logisch. Maar hoe ziet het eruit als je het bouwt?</p>
-<p>In dit blog maken we een eerste workflow met <a href="https://github.com/tlaumen/ari">ari-core</a>. Dit maken we eerst lokaal, daarna in een web app om &lsquo;m te kunnen delen.</p>
+<p>In dit blog maken we een eerste workflow met <a href="https://github.com/tlaumen/ari">ari-core</a>. We bouwen hem eerst lokaal en delen hem daarna via een webapp.</p>
 <p>Als voorbeeld maken we een (uitgekleedde) stabiliteitsberekening. De berekening zelf wil je niet door een taalmodel laten verzinnen, die moet reproduceerbaar zijn. Maar een taalmodel kan wél helpen met een eerste rapporttekst.</p>
 <h2>Waarom het ARI framework?</h2>
 <p>Jacob Lauritzen van Legora vatte het goed samen:</p>
 <blockquote>
 <p>&ldquo;The ceiling of chat interfaces isn&rsquo;t a UX problem. It&rsquo;s a verification problem.&rdquo;</p>
 </blockquote>
-<p>In onze wereld is dit direct herkenbaar. Je kan aan een AI vragen: &ldquo;maak een stabiliteitsrapport&rdquo;. Dan een uiteenzetting die er (waarschijnlijk) goed uitziet. Maar hoe is de berekening gedaan? Welke parameters zijn gebruikt? Hoe kun jij eenvoudig controlleren of dit klopt en bijsturen als dit niet zo is!</p>
+<p>In onze wereld is dit direct herkenbaar. Je kan aan een AI vragen: &ldquo;maak een stabiliteitsrapport&rdquo;. Dan krijg je waarschijnlijk een uiteenzetting die er goed uitziet. Maar hoe is de berekening gedaan? Welke parameters zijn gebruikt? En hoe kun jij eenvoudig controleren of dit klopt en bijsturen als dat niet zo is?</p>
 <p>Met een workflow maken we die stappen expliciet.</p>
 <p>Niet alles wordt AI. De berekening blijft code. De rapporttekst mag AI zijn. De controle blijft bij de ingenieur.</p>
 <h2>Wat gaan we bouwen?</h2>
@@ -232,12 +232,12 @@ Conceptrapport schrijven
 Feedback van de gebruiker verwerken
 </code></pre></div>
 
-<p>De veiligheidsfactor komt uit een open-source Pythonpakket voor stabiliteit (om het bruikaar voor iedereen te maken dus even geen D-Stability, Slope\W, &hellip;). De rapporttekst komt uit een AI functie. De ingenieur geeft vervolgens de feedback om de rapportage te verbeteren.</p>
+<p>De veiligheidsfactor komt uit een open-source Pythonpakket voor stabiliteit. Zo blijft de tutorial bruikbaar voor iedereen, dus even geen D-Stability, Slope/W of andere commerciële software. De rapporttekst komt uit een AI-functie. De ingenieur geeft vervolgens feedback om de rapportage te verbeteren.</p>
 <p>Aan het einde pushen we de workflow naar een demo-omgeving:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>ari<span style="color: #6E7681"> </span>demo-push
 </code></pre></div>
 
-<p>Daarmee draait dezelfde workflow in een web app. Je collega hoeft geen Python, <code>uv</code> of repository te kennen. Hij opent de link, vult de invoer in, draait de berekening en beoordeelt het rapport.</p>
+<p>Daarmee draait dezelfde workflow in een webapp. Je collega hoeft geen Python, <code>uv</code> of repository te kennen. Hij opent de link, vult de invoer in, draait de berekening en beoordeelt het rapport.</p>
 <h2>Project opzetten</h2>
 <p>ARI gebruikt <code>uv</code> als package manager. Een nieuw project aanmaken doe je met:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>ari<span style="color: #6E7681"> </span>new
@@ -253,13 +253,13 @@ Feedback van de gebruiker verwerken
 <p>Een ARI workflow bestaat uit drie simpele onderdelen.</p>
 <p>Een <code>DataModel</code> beschrijft de data die door je workflow stroomt. Denk aan grondlagen, parameters, geometrie, rekenresultaten of rapporttekst.</p>
 <p>Een <code>Step</code> doet één ding. Bijvoorbeeld: vraag het grondprofiel uit, voer geometrie in, voer een berekening uit of genereer een rapport.
-De <code>Step</code> voert dit uit middels de <code>execute(self, ctx)</code> methode die je voor elke <code>Step</code> zelf moet definieren. </p>
-<p>Voor interactie met de gebruiker kent <code>ari-core</code> (op dit moment) vier primitieven (sterk geinspireerd door <a href="https://github.com/prompt-toolkit/python-prompt-toolkit">prompt-toolkit</a>):</p>
+De <code>Step</code> voert dit uit via de <code>execute(self, ctx)</code> methode die je voor elke <code>Step</code> zelf moet definiëren. </p>
+<p>Voor interactie met de gebruiker kent <code>ari-core</code> op dit moment vier primitieven, sterk geïnspireerd door <a href="https://github.com/prompt-toolkit/python-prompt-toolkit">prompt-toolkit</a>:</p>
 <ul>
 <li><code>prompt(...)</code>: gebruiker krijgt een open vraag (tekst als antwoord)</li>
 <li><code>choice(...)</code>: gebruiker moet een optie kiezen</li>
 <li><code>confirm(...)</code>: gebruiker moet iets bevestigen</li>
-<li><code>ui(...)</code>: gebruiker krijgt een UI element te zien, al uitgewerkt bv. voor DocumentViewer of zelf geimplementeerd</li>
+<li><code>ui(...)</code>: gebruiker krijgt een UI-element te zien, bijvoorbeeld een <code>DocumentViewer</code> of een zelf geïmplementeerde component</li>
 </ul>
 <p>Een <code>Segment</code> is de workflow zelf: een lijst van steps in de volgorde waarin ze uitgevoerd worden.</p>
 <p>Daarnaast kent ARI twee plekken om data op te slaan:</p>
@@ -268,23 +268,21 @@ De <code>Step</code> voert dit uit middels de <code>execute(self, ctx)</code> me
 <li><code>Table.WORKFLOW</code>: tijdelijke data binnen één berekening</li>
 </ul>
 <h1>Deel 1 — Een eerste stabiliteitsworkflow</h1>
-<p>We beginnen bewust eenvoudig, dit betekend dat je aan het eind van dit blog nog een workflow hebt zoals je &lsquo;m als ingenieur zou willen, maar je wel de concepten hebt geleerd.
+<p>We beginnen bewust eenvoudig. Aan het eind van dit blog heb je nog niet de workflow zoals je hem als ingenieur uiteindelijk zou willen gebruiken, maar je hebt wel de belangrijkste concepten geleerd.
 De workflow verfijnen doen we in de volgende blog!</p>
 <h2>Stap 1 — Grondprofiel invoeren</h2>
-<p>Voor onze stabiliteit te berekenen moet de gebruiker een grondprofiel hebben.
-Afhankelijk van je situatie kan dit op allerlei manieren:</p>
-<ul>
-<li>Ophalen uit je project database</li>
-<li>Selecteren uit je geotechnisch lengteprofiel</li>
-<li>Handmatig je cpt interpreteren</li>
-<li>Gedefineerd door de ingenieur</li>
-</ul>
-<p>Om simpel te beginnen, kiezen we nu even voor de laatste optie.
-We vragen de gebruiker om de grondlagen: &lsquo;materiaal&rsquo; en &lsquo;onderkant laag&rsquo; handmatig in te voeren.
-Dit kan simpel met <code>prompt(...)</code>.
-Deze step produceert <code>Grondprofiel</code> en bewaart dat in <code>Table.WORKFLOW</code>. Dit is gedefinieerd op het <code>produces</code> attribute op <code>VoerGrondprofielInStep</code>.
-De data wordt middels de <code>key</code> in het <code>ctx</code> object in de database gezet. </p>
-<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
+<p>De gebruiker voert een eenvoudig grondprofiel in.</p>
+<p>Bijvoorbeeld:</p>
+<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>NAP +8.0 m tot NAP +5.0 m: klei
+NAP +5.0 m tot NAP +1.0 m: zand
+NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
+</code></pre></div>
+
+<p>Deze step produceert <code>grondprofiel</code> en bewaart dat in <code>Table.WORKFLOW</code>. Het grondprofiel is nodig binnen deze berekening, maar is in deze demo nog geen projectgegeven dat we over meerdere runs bewaren.</p>
+<p>In ARI maken we hier eerst getypeerde data van. De helper <code>as_float(...)</code> houdt de conversie uit de weg, zodat de ARI-primitives zichtbaar blijven: <code>prompt(...)</code>, <code>confirm(...)</code>, <code>DataModel</code> en <code>ctx[...]</code>.</p>
+<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
+
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">confirm,</span> <span style="color: #E6EDF3">prompt</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
 
@@ -342,30 +340,19 @@ De data wordt middels de <code>key</code> in het <code>ctx</code> object in de d
         <span style="color: #E6EDF3">)</span>
 </code></pre></div>
 
-<p>De helper <code>as_float(...)</code> maakt de conversie: string met komma naar floating point (conversie die in toekomstige versies automatisch in prompt moet zitten).</p>
+<p>De helper <code>as_float(...)</code> maakt de conversie van tekst met eventueel een komma naar een floating point getal.</p>
 <h2>Stap 2 — Parameters invoeren</h2>
-<p>Vervolgens moeten we de materiaal parameters opgeven per grondsoort. 
-In een project context halen we dit uit een uitgangspunten notitie (mooi voor AI).
-Bij een enkele berekening in een tender geeft de ingenieur een inschatting op basis:</p>
-<ul>
-<li>van grondonderzoek uitgevoerd</li>
-<li>historische data (API?)</li>
-<li>&lsquo;engineering judgement&rsquo;</li>
-</ul>
-<p>In het meest simpele scenario geeft de ingenieur dus zelf deze waardes op. 
-In de meest simpele implementatie kunnen we dit opnieuw met een <code>prompt(...)</code> doen (gebruikt in dit blog).
-Een UI element met een tabel invullen zou een meer intuitieve implementatie opleveren (later meer).</p>
-<p>Voor het uitrekenen van de stabiliteit rekenen we met het Mohr-Coulomb sterkte model.
-De parameters zijn dan:</p>
+<p>Vervolgens moeten we de materiaalparameters opgeven per grondsoort. In een projectcontext haal je dit bijvoorbeeld uit een uitgangspuntennotitie. Voor een enkele berekening kan de ingenieur zelf een inschatting geven op basis van grondonderzoek, historische data en engineering judgement.</p>
+<p>Voor het uitrekenen van de stabiliteit rekenen we met het Mohr-Coulomb sterkte model. De parameters zijn dan:</p>
 <ul>
 <li>volumiek gewicht</li>
 <li>cohesie</li>
 <li>hoek van inwendige wrijving</li>
 </ul>
-<p>In de callflow heeft deze step het &lsquo;grondprofiel&rsquo; op als input nodig, zie het <code>requires</code> klasse attribuut. 
-We moeten immers weten wat voor grondsoorten er gedefinieerd zijn. 
-De output zijn de &lsquo;materiaal_parameters&rsquo; </p>
-<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
+<p>In de callflow heeft deze step <code>grondprofiel</code> als input nodig. We moeten immers weten welke grondsoorten er gedefinieerd zijn. De output is <code>materiaal_parameters</code>; die bewaren we in <code>Table.PROJECT</code>, omdat materiaalparameters projectuitgangspunten zijn.</p>
+<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
+
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">prompt</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Requirement,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
 
@@ -394,7 +381,6 @@ De output zijn de &lsquo;materiaal_parameters&rsquo; </p>
         <span style="color: #E6EDF3">per_materiaal:</span> <span style="color: #E6EDF3">dict[str,</span> <span style="color: #E6EDF3">GrondsoortParameters]</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">{}</span>
 
         <span style="color: #FF7B72">for</span> <span style="color: #E6EDF3">naam</span> <span style="color: #FF7B72; font-weight: bold">in</span> <span style="color: #E6EDF3">materialen:</span>
-            <span style="color: #E6EDF3">print(</span><span style="color: #79C0FF">f</span><span style="color: #A5D6FF">&quot;Voer parameters in voor materiaal: {</span><span style="color: #E6EDF3">naam</span><span style="color: #A5D6FF">}&quot;</span><span style="color: #E6EDF3">)</span>
             <span style="color: #E6EDF3">gamma</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">prompt(</span><span style="color: #79C0FF">f</span><span style="color: #A5D6FF">&quot;{</span><span style="color: #E6EDF3">naam</span><span style="color: #A5D6FF">} - volumiek gewicht (kN/m3):&quot;</span><span style="color: #E6EDF3">)</span>
             <span style="color: #E6EDF3">cohesie</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">prompt(</span><span style="color: #79C0FF">f</span><span style="color: #A5D6FF">&quot;{</span><span style="color: #E6EDF3">naam</span><span style="color: #A5D6FF">} - cohesie (kPa):&quot;</span><span style="color: #E6EDF3">)</span>
             <span style="color: #E6EDF3">phi</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">prompt(</span><span style="color: #79C0FF">f</span><span style="color: #A5D6FF">&quot;{</span><span style="color: #E6EDF3">naam</span><span style="color: #A5D6FF">} - wrijvingshoek (graden):&quot;</span><span style="color: #E6EDF3">)</span>
@@ -413,17 +399,18 @@ De output zijn de &lsquo;materiaal_parameters&rsquo; </p>
 <ul>
 <li>met een API uit ACC halen</li>
 <li>uit een plaatje abstraheren middels AI</li>
-<li>uit een gestandaardiseerde excel inlezen</li>
-<li>zelf tekenen (bv. bij een stabiliteitsmaatregel in het dijkontwerp)</li>
+<li>uit een gestandaardiseerde spreadsheet inlezen</li>
+<li>zelf tekenen, bijvoorbeeld bij een stabiliteitsmaatregel in het dijkontwerp</li>
 </ul>
 <p>In deze demo voeren we de geometrie in als puntenlijst via een <code>prompt(...)</code> en zetten die daarna om naar workflowdata.</p>
-<p>De helper <code>parse_geometriepunten(...)</code> houdt de string-parsing buiten de step-logica en kun je terug vinden <a href="">IN DE REPO</a>. </p>
-<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
+<p>De helper <code>parse_geometriepunten(...)</code> houdt de string-parsing buiten de step-logica. De volledige helper staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij dit artikel</a>.</p>
+<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
+
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">prompt</span>
-<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Requirement,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
 
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.voer_grondprofiel_in</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">as_float</span>
-<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.voer_parameters_in</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">MateriaalParameters</span>
 
 
 <span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">GeometriePunt</span><span style="color: #E6EDF3">(DataModel):</span>
@@ -461,17 +448,19 @@ De output zijn de &lsquo;materiaal_parameters&rsquo; </p>
 </code></pre></div>
 
 <h2>Stap 4 — Stabiliteitsberekening uitvoeren</h2>
-<p>We nemen aan dat we geen constructieve nodig hebben en verwaarlozen eventuele maaiveldbelastingen en dan kunnen we nu een simpele berekening gaan maken!</p>
-<p>De workflow gebruikt het grondprofiel, de materiaalparameters en de geometrie als input voor een open-source Pythonpakket dat de stabiliteit berekent. Dit is onconventioneel maar betekend wel dat ook alle mensen zonder geotechnische software geinstalleerd deze tutorial mee kunnen doen!</p>
+<p>We nemen aan dat we geen constructies, maaiveldbelastingen of andere externe belastingen meenemen. Daarmee kunnen we nu een simpele stabiliteitsberekening maken.</p>
+<p>De workflow gebruikt het grondprofiel, de materiaalparameters en de geometrie als input voor een open-source Pythonpakket dat de stabiliteit berekent. Dit is onconventioneel, maar betekent wel dat ook mensen zonder geïnstalleerde geotechnische software deze tutorial mee kunnen doen.</p>
 <p>De uitkomst bestaat hier uit:</p>
 <ul>
 <li>veiligheidsfactor</li>
 <li>middelpunt en straal van de maatgevende glijcirkel</li>
 </ul>
-<p>De helper <code>build_slope_data(...)</code> zet de workflowdata om naar het formaat van de rekenkern. <code>run_analysis(...)</code> voert de xslope-analyse uit en geeft de maatgevende resultaten terug. Deze kunnen jullie terugvinden in de <a href="">REPO</a>.</p>
-<p>Nu kunnen we eenvoudig en overzichtelijk een stap maken die de berekening uitvoert! 
-En omdat we in deze stap geen AI gebruiken maar gewoon onze rekensoftware, hoeven we ons geen zorgen te maken dat we het juiste uitrekenen!</p>
-<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
+<p>De helper <code>build_slope_data(...)</code> zet de workflowdata om naar het formaat van de rekenkern. <code>run_analysis(...)</code> voert de xslope-analyse uit en geeft de maatgevende resultaten terug. De volledige implementatie staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij dit artikel</a>.</p>
+<p>Nu kunnen we eenvoudig en overzichtelijk een step maken die de berekening uitvoert. Omdat we in deze step geen AI gebruiken maar gewone rekensoftware, hoeven we ons geen zorgen te maken dat een taalmodel de veiligheidsfactor verzint.</p>
+<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
+
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">ui</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Requirement,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
 
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.xslope_engine</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">build_slope_data,</span> <span style="color: #E6EDF3">run_analysis</span>
@@ -487,6 +476,33 @@ En omdat we in deze stap geen AI gebruiken maar gewoon onze rekensoftware, hoeve
     <span style="color: #E6EDF3">maatgevende_cirkel_r:</span> <span style="color: #E6EDF3">float</span>
 
 
+<span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">SlipcircleViewerComponent</span><span style="color: #E6EDF3">:</span>
+    <span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">__init__</span><span style="color: #E6EDF3">(self,</span> <span style="color: #E6EDF3">image_base64:</span> <span style="color: #E6EDF3">str,</span> <span style="color: #E6EDF3">veiligheidsfactor:</span> <span style="color: #E6EDF3">float)</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #79C0FF">None</span><span style="color: #E6EDF3">:</span>
+        <span style="color: #E6EDF3">self</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">image_base64</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">image_base64</span>
+        <span style="color: #E6EDF3">self</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">veiligheidsfactor</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">veiligheidsfactor</span>
+
+    <span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">render_html</span><span style="color: #E6EDF3">(self)</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #E6EDF3">str:</span>
+        <span style="color: #FF7B72">return</span> <span style="color: #79C0FF">f</span><span style="color: #A5D6FF">&quot;&quot;&quot;</span>
+<span style="color: #A5D6FF">        &lt;div style=&#39;font-family: sans-serif; max-width: 1000px; margin: 0 auto;&#39;&gt;</span>
+<span style="color: #A5D6FF">          &lt;h3&gt;Maatgevende glijcirkel&lt;/h3&gt;</span>
+<span style="color: #A5D6FF">          &lt;p&gt;Veiligheidsfactor (Bishop): &lt;strong&gt;{</span><span style="color: #E6EDF3">self</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">veiligheidsfactor</span><span style="color: #A5D6FF">:.3f}&lt;/strong&gt;&lt;/p&gt;</span>
+<span style="color: #A5D6FF">          &lt;img</span>
+<span style="color: #A5D6FF">            src=&#39;data:image/png;base64,{</span><span style="color: #E6EDF3">self</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">image_base64</span><span style="color: #A5D6FF">}&#39;</span>
+<span style="color: #A5D6FF">            alt=&#39;Maatgevende glijcirkel&#39;</span>
+<span style="color: #A5D6FF">            style=&#39;max-width: 100%; border: 1px solid #ddd; border-radius: 8px;&#39;</span>
+<span style="color: #A5D6FF">          /&gt;</span>
+<span style="color: #A5D6FF">          &lt;div style=&#39;margin-top: 12px;&#39;&gt;</span>
+<span style="color: #A5D6FF">            &lt;button id=&#39;verder&#39;&gt;Verder&lt;/button&gt;</span>
+<span style="color: #A5D6FF">          &lt;/div&gt;</span>
+<span style="color: #A5D6FF">        &lt;/div&gt;</span>
+<span style="color: #A5D6FF">        &lt;script&gt;</span>
+<span style="color: #A5D6FF">          document.getElementById(&#39;verder&#39;).addEventListener(&#39;click&#39;, function () </span><span style="color: #79C0FF">{{</span>
+<span style="color: #A5D6FF">            window.parent.postMessage(</span><span style="color: #79C0FF">{{</span><span style="color: #A5D6FF"> value: true, summary: &#39;Glijcirkel bekeken&#39; </span><span style="color: #79C0FF">}}</span><span style="color: #A5D6FF">, &#39;*&#39;);</span>
+<span style="color: #A5D6FF">          </span><span style="color: #79C0FF">}}</span><span style="color: #A5D6FF">);</span>
+<span style="color: #A5D6FF">        &lt;/script&gt;</span>
+<span style="color: #A5D6FF">        &quot;&quot;&quot;</span>
+
+
 <span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">BerekenStabiliteitStep</span><span style="color: #E6EDF3">(Step):</span>
     <span style="color: #E6EDF3">name</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #A5D6FF">&quot;bereken_stabiliteit&quot;</span>
     <span style="color: #E6EDF3">requires</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[</span>
@@ -497,7 +513,6 @@ En omdat we in deze stap geen AI gebruiken maar gewoon onze rekensoftware, hoeve
     <span style="color: #E6EDF3">produces</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;stabiliteitsresultaat&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW)]</span>
 
     <span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">execute</span><span style="color: #E6EDF3">(self,</span> <span style="color: #E6EDF3">ctx:</span> <span style="color: #E6EDF3">StepContext)</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #79C0FF">None</span><span style="color: #E6EDF3">:</span>
-
         <span style="color: #E6EDF3">grondprofiel:</span> <span style="color: #E6EDF3">Grondprofiel</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">]</span>
         <span style="color: #E6EDF3">materiaal_parameters:</span> <span style="color: #E6EDF3">MateriaalParameters</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">]</span>
         <span style="color: #E6EDF3">geometrie:</span> <span style="color: #E6EDF3">Geometrie</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;geometrie&quot;</span><span style="color: #E6EDF3">]</span>
@@ -507,7 +522,11 @@ En omdat we in deze stap geen AI gebruiken maar gewoon onze rekensoftware, hoeve
             <span style="color: #E6EDF3">materiaal_parameters</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">materiaal_parameters,</span>
             <span style="color: #E6EDF3">geometrie</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">geometrie,</span>
         <span style="color: #E6EDF3">)</span>
-        <span style="color: #E6EDF3">analyse</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">run_analysis(slope_data,</span> <span style="color: #E6EDF3">num_slices</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">30</span><span style="color: #E6EDF3">)</span>
+        <span style="color: #E6EDF3">analyse</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">run_analysis(slope_data,</span> <span style="color: #E6EDF3">num_slices</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">30</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">include_plot</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #79C0FF">True</span><span style="color: #E6EDF3">)</span>
+
+        <span style="color: #E6EDF3">plot_base64</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">analyse</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">get(</span><span style="color: #A5D6FF">&quot;plot_base64&quot;</span><span style="color: #E6EDF3">)</span>
+        <span style="color: #FF7B72">if</span> <span style="color: #E6EDF3">plot_base64:</span>
+            <span style="color: #E6EDF3">ui(SlipcircleViewerComponent(plot_base64,</span> <span style="color: #E6EDF3">analyse[</span><span style="color: #A5D6FF">&quot;veiligheidsfactor&quot;</span><span style="color: #E6EDF3">]))</span>
 
         <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;stabiliteitsresultaat&quot;</span><span style="color: #E6EDF3">]</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">StabiliteitsResultaat(</span>
             <span style="color: #E6EDF3">veiligheidsfactor</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">analyse[</span><span style="color: #A5D6FF">&quot;veiligheidsfactor&quot;</span><span style="color: #E6EDF3">],</span>
@@ -518,20 +537,24 @@ En omdat we in deze stap geen AI gebruiken maar gewoon onze rekensoftware, hoeve
 </code></pre></div>
 
 <h2>Stap 5 — Conceptrapport genereren</h2>
-<p>Met de berekening gemaakt kunnen we er een rapport van schrijven, hoewel we normaal natuurlijk veel meer berekeningen zouden maken om een gevoel te krijgen voor waar we mee bezig zijn.
-Het rapporteren in nu een koud kunstje, we:</p>
+<p>Met de berekening gemaakt kunnen we er een rapport van schrijven, hoewel we normaal natuurlijk veel meer berekeningen zouden maken om gevoel te krijgen voor het probleem.</p>
+<p>Het rapporteren is nu overzichtelijk, want we:</p>
 <ul>
 <li>hebben alle data gestructureerd opgeslagen</li>
-<li>kennen de aannames en zijn meegenomen in de berekening</li>
-<li>hebben een simpele, doorzichtige interface om een AI-functie aan te roepen die het rapport voor ons schrijft!</li>
+<li>kennen de aannames die zijn meegenomen in de berekening</li>
+<li>hebben een simpele interface om een AI-functie aan te roepen die het rapport voor ons schrijft</li>
 </ul>
-<p>We hoeven ons vervolgens alleen nog maar druk te maken dat we de <a href="https://ari.engineer/blog/2">context voor het model goed benutten</a>.
-En met een UI component uit ari-core kunnen we het geschreven rapport vervolgens visualiseren.</p>
-<p>De helper <code>genereer_rapport(...)</code> maakt de rapporttekst op basis van de gestructureerde invoer, zie <a href="">REPO</a> voor de volledige implementatie. Later gebruiken we dezelfde helper opnieuw met feedbackpunten.</p>
-<p>Let wel op: je dient zelf je API key in de <code>.env</code> moeten inladen. Hiervoor zijn een paar API&rsquo;s van de model providers toegevoegd aan de <code>genereer_rapport(...)</code> functie. Maar deze keys moet je niet naar de &lsquo;demo omgeving&rsquo; pushen!</p>
-<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
+<p>We hoeven ons vervolgens vooral druk te maken dat we de <a href="https://ari.engineer/blog/2">context voor het model goed benutten</a>.</p>
+<p>De helper <code>genereer_rapport(...)</code> maakt de rapporttekst in markdown op basis van de gestructureerde invoer. De volledige implementatie staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij dit artikel</a>. Later gebruiken we dezelfde helper opnieuw met feedbackpunten.</p>
+<p>Met <code>ui(DocumentViewer(...))</code> tonen we het markdownrapport in de browser. Dat werkt dus niet alleen lokaal in de CLI, maar ook in de demo-omgeving.</p>
+<p>Let wel op: je moet zelf je API key in de <code>.env</code> laden. Hiervoor zijn een paar API&rsquo;s van modelproviders toegevoegd aan de <code>genereer_rapport(...)</code> functie. Maar deze keys moet je niet naar de demo-omgeving pushen.</p>
+<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
+
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">ui</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Requirement,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
 
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.document_viewer</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DocumentViewer</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.rapport_generator</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">genereer_rapport</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.bereken_stabiliteit</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">StabiliteitsResultaat</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.laad_geometrie</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Geometrie</span>
@@ -547,9 +570,9 @@ En met een UI component uit ari-core kunnen we het geschreven rapport vervolgens
 <span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">GenereerRapportStep</span><span style="color: #E6EDF3">(Step):</span>
     <span style="color: #E6EDF3">name</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #A5D6FF">&quot;genereer_rapport&quot;</span>
     <span style="color: #E6EDF3">requires</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[</span>
-        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Grondprofiel),</span>
+        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Grondprofiel),</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">MateriaalParameters),</span>
-        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;geometrie&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Geometrie),</span>
+        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;geometrie&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Geometrie),</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;stabiliteitsresultaat&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">StabiliteitsResultaat),</span>
     <span style="color: #E6EDF3">]</span>
     <span style="color: #E6EDF3">produces</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;concept_rapport&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW)]</span>
@@ -568,10 +591,14 @@ En met een UI component uit ari-core kunnen we het geschreven rapport vervolgens
             <span style="color: #E6EDF3">feedback_pointers</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #79C0FF">None</span><span style="color: #E6EDF3">,</span>
         <span style="color: #E6EDF3">)</span>
 
-        <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;concept_rapport&quot;</span><span style="color: #E6EDF3">]</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ConceptRapport(</span>
+        <span style="color: #E6EDF3">concept_rapport</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ConceptRapport(</span>
             <span style="color: #E6EDF3">titel</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;Concept stabiliteitsrapport&quot;</span><span style="color: #E6EDF3">,</span>
             <span style="color: #E6EDF3">inhoud_markdown</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">inhoud,</span>
         <span style="color: #E6EDF3">)</span>
+
+        <span style="color: #E6EDF3">ui(DocumentViewer(concept_rapport</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">titel,</span> <span style="color: #E6EDF3">concept_rapport</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">inhoud_markdown))</span>
+
+        <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;concept_rapport&quot;</span><span style="color: #E6EDF3">]</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">concept_rapport</span>
 </code></pre></div>
 
 <p>De volgorde is belangrijk:</p>
@@ -581,44 +608,52 @@ daarna controleren
 </code></pre></div>
 
 <h2>Stap 6 — Feedback vragen en geaccepteerde versie opslaan</h2>
-<p>De conceptrapportage bevat zonder twijfel tekortkomingen, deze moet de ingenieur dus kunnen aanpassen!
-Om dit te kunnen doen hebben we een stap toegevoegd waarin de gebuiker feedback kan geven via een <code>prompt(...)</code> en met deze &lsquo;pointers&rsquo; vervolgens een nieuwe versie wordt gemaakt.
-Al moet dit natuurlijk gewoon een UI Component in <code>ari-core</code> worden waarbij je, zoals in ChatGPT, een stuk tekst kan selecteren en prompten wat je hiermee wil.
-Deze complexere implementatie komt later nog eens aan bod.</p>
+<p>De conceptrapportage bevat zonder twijfel tekortkomingen. De ingenieur moet dus feedback kunnen geven.</p>
+<p>In Stap 5 is het conceptrapport al getoond met <code>DocumentViewer</code>. In deze step vragen we de gebruiker één of meer pointers via <code>prompt(...)</code>. Met die pointers draaien we dezelfde rapportfunctie opnieuw. De aangepaste versie tonen we weer met <code>DocumentViewer</code>.</p>
+<p>Later kan dit een rijkere UI-component worden waarbij je, zoals in ChatGPT, een stuk tekst selecteert en prompt wat je daarmee wilt.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
 
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
-<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">prompt</span>
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">confirm,</span> <span style="color: #E6EDF3">prompt,</span> <span style="color: #E6EDF3">ui</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Requirement,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
 
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.document_viewer</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DocumentViewer</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.rapport_generator</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">genereer_rapport</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.bereken_stabiliteit</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">StabiliteitsResultaat</span>
-<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.genereer_rapport</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">ConceptRapport</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.laad_geometrie</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Geometrie</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.voer_grondprofiel_in</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Grondprofiel</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.voer_parameters_in</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">MateriaalParameters</span>
 
 
 <span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">RapportFeedback</span><span style="color: #E6EDF3">(DataModel):</span>
-    <span style="color: #E6EDF3">opmerkingen:</span> <span style="color: #E6EDF3">str</span>
+    <span style="color: #E6EDF3">opmerkingen:</span> <span style="color: #E6EDF3">list[str]</span>
 
 
 <span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">GeaccepteerdRapport</span><span style="color: #E6EDF3">(DataModel):</span>
     <span style="color: #E6EDF3">inhoud_markdown:</span> <span style="color: #E6EDF3">str</span>
 
 
-<span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">parse_pointers</span><span style="color: #E6EDF3">(value:</span> <span style="color: #E6EDF3">object)</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #E6EDF3">list[str]:</span>
-    <span style="color: #FF7B72">return</span> <span style="color: #E6EDF3">[p</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">strip()</span> <span style="color: #FF7B72">for</span> <span style="color: #E6EDF3">p</span> <span style="color: #FF7B72; font-weight: bold">in</span> <span style="color: #E6EDF3">str(value)</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">split(</span><span style="color: #A5D6FF">&quot;;&quot;</span><span style="color: #E6EDF3">)</span> <span style="color: #FF7B72">if</span> <span style="color: #E6EDF3">p</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">strip()]</span>
+<span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">vraag_pointers</span><span style="color: #E6EDF3">()</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #E6EDF3">list[str]:</span>
+    <span style="color: #E6EDF3">pointers:</span> <span style="color: #E6EDF3">list[str]</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[]</span>
+
+    <span style="color: #FF7B72">while</span> <span style="color: #79C0FF">True</span><span style="color: #E6EDF3">:</span>
+        <span style="color: #E6EDF3">opmerking</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">prompt(</span><span style="color: #A5D6FF">&quot;Welke opmerking wil je meegeven voor de volgende rapportversie?&quot;</span><span style="color: #E6EDF3">)</span>
+        <span style="color: #E6EDF3">pointers</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">append(str(opmerking)</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">strip())</span>
+
+        <span style="color: #E6EDF3">doorgaan</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">confirm(</span><span style="color: #A5D6FF">&quot;Nog een opmerking toevoegen?&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">default</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #79C0FF">False</span><span style="color: #E6EDF3">)</span>
+        <span style="color: #FF7B72">if</span> <span style="color: #FF7B72; font-weight: bold">not</span> <span style="color: #E6EDF3">doorgaan:</span>
+            <span style="color: #FF7B72">break</span>
+
+    <span style="color: #FF7B72">return</span> <span style="color: #E6EDF3">pointers</span>
 
 
 <span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">VraagRapportFeedbackStep</span><span style="color: #E6EDF3">(Step):</span>
     <span style="color: #E6EDF3">name</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #A5D6FF">&quot;vraag_rapport_feedback&quot;</span>
     <span style="color: #E6EDF3">requires</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[</span>
-        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Grondprofiel),</span>
+        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Grondprofiel),</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">MateriaalParameters),</span>
-        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;geometrie&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Geometrie),</span>
+        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;geometrie&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Geometrie),</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;stabiliteitsresultaat&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">StabiliteitsResultaat),</span>
-        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;concept_rapport&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">ConceptRapport),</span>
     <span style="color: #E6EDF3">]</span>
     <span style="color: #E6EDF3">produces</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[</span>
         <span style="color: #E6EDF3">Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;rapport_feedback&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT),</span>
@@ -630,33 +665,25 @@ Deze complexere implementatie komt later nog eens aan bod.</p>
         <span style="color: #E6EDF3">materiaal_parameters:</span> <span style="color: #E6EDF3">MateriaalParameters</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">]</span>
         <span style="color: #E6EDF3">geometrie:</span> <span style="color: #E6EDF3">Geometrie</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;geometrie&quot;</span><span style="color: #E6EDF3">]</span>
         <span style="color: #E6EDF3">stabiliteitsresultaat:</span> <span style="color: #E6EDF3">StabiliteitsResultaat</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;stabiliteitsresultaat&quot;</span><span style="color: #E6EDF3">]</span>
-        <span style="color: #E6EDF3">concept_rapport:</span> <span style="color: #E6EDF3">ConceptRapport</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;concept_rapport&quot;</span><span style="color: #E6EDF3">]</span>
 
-        <span style="color: #E6EDF3">print(</span><span style="color: #A5D6FF">&quot;</span><span style="color: #79C0FF">\n</span><span style="color: #A5D6FF">=== Concept rapport ===</span><span style="color: #79C0FF">\n</span><span style="color: #A5D6FF">&quot;</span><span style="color: #E6EDF3">)</span>
-        <span style="color: #E6EDF3">print(concept_rapport</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">inhoud_markdown)</span>
-
-        <span style="color: #E6EDF3">opmerkingen</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">prompt(</span>
-            <span style="color: #A5D6FF">&quot;Geef pointers voor verbetering (scheid met &#39;;&#39;). &quot;</span>
-            <span style="color: #A5D6FF">&quot;Voorbeeld: voeg duidelijke conclusie toe; benoem aannames expliciet&quot;</span>
-        <span style="color: #E6EDF3">)</span>
+        <span style="color: #E6EDF3">pointers</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">vraag_pointers()</span>
 
         <span style="color: #E6EDF3">aangepaste_rapporttekst</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">genereer_rapport(</span>
             <span style="color: #E6EDF3">grondprofiel</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">grondprofiel,</span>
             <span style="color: #E6EDF3">materiaal_parameters</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">materiaal_parameters,</span>
             <span style="color: #E6EDF3">geometrie</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">geometrie,</span>
             <span style="color: #E6EDF3">stabiliteitsresultaat</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">stabiliteitsresultaat,</span>
-            <span style="color: #E6EDF3">feedback_pointers</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">parse_pointers(opmerkingen),</span>
+            <span style="color: #E6EDF3">feedback_pointers</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">pointers,</span>
         <span style="color: #E6EDF3">)</span>
 
-        <span style="color: #E6EDF3">print(</span><span style="color: #A5D6FF">&quot;</span><span style="color: #79C0FF">\n</span><span style="color: #A5D6FF">=== Aangepast rapport ===</span><span style="color: #79C0FF">\n</span><span style="color: #A5D6FF">&quot;</span><span style="color: #E6EDF3">)</span>
-        <span style="color: #E6EDF3">print(aangepaste_rapporttekst)</span>
+        <span style="color: #E6EDF3">ui(DocumentViewer(</span><span style="color: #A5D6FF">&quot;Aangepast stabiliteitsrapport&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">aangepaste_rapporttekst))</span>
 
-        <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;rapport_feedback&quot;</span><span style="color: #E6EDF3">]</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">RapportFeedback(opmerkingen</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">str(opmerkingen)</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">strip())</span>
+        <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;rapport_feedback&quot;</span><span style="color: #E6EDF3">]</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">RapportFeedback(opmerkingen</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">pointers)</span>
         <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;geaccepteerd_rapport&quot;</span><span style="color: #E6EDF3">]</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">GeaccepteerdRapport(inhoud_markdown</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">aangepaste_rapporttekst)</span>
 </code></pre></div>
 
 <h2>Segment registreren</h2>
-<p>Nu hebben we zes <code>Step</code> klassen gedefineerd. Deze verhouden zich tot mekaar in <code>Segment</code> en een <code>Register</code>.
+<p>Nu hebben we zes <code>Step</code>-klassen gedefinieerd. Deze komen samen in een <code>Segment</code> en een <code>SegmentRegistry</code>.
 Om de implementatie voor de tutorial simpel te houden maken we er een <code>Segment</code> van, hoewel we dit in de praktijk waarschijnlijk overal waar we vertakken, zoals ook benoemd in dit blog, zouden kunnen/willen opknippen.
 Een <code>Segment</code> hoort in een <code>SegmentRegistry</code> waarvan elke applicatie er een heeft. Ook geven we het een naam en beschrijving mee zodat het eenvoudig te herkennen is wat het doet.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>VoerGrondprofielIn
@@ -698,13 +725,13 @@ VraagRapportFeedback
 <span style="color: #E6EDF3">)</span>
 </code></pre></div>
 
-<p>Met de <code>SegmentRegistry</code> gedefineerd kunnen we onze <code>ari-core</code> applicatie runnen doordat deze in <code>main.py</code> wordt ingeladen, zie je eigen repo (nadat je <code>uv run ari new</code> hebt gerund) of de repository van deze hele tutorial voor meer informatie (niet relevant voor nu, behalve dat het goed is om te weten dat dit gebeurd). 
+<p>Met de <code>SegmentRegistry</code> gedefinieerd kunnen we onze <code>ari-core</code> applicatie runnen. Deze registry wordt in <code>main.py</code> ingeladen. Zie je eigen repo, nadat je <code>uv run ari new</code> hebt gerund, of de <a href="https://github.com/tlaumen/ari-blog-4">repository van deze tutorial</a> voor meer informatie. 
 Nu kun je je workflow(s) lokaal runnen met:</p>
-<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>main.py
+<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>python<span style="color: #6E7681"> </span>main.py
 </code></pre></div>
 
 <p>Dat is goed om te bouwen. Maar het is niet genoeg voor adoptie. Een workflow wordt pas interessant als collega&rsquo;s hem kunnen proberen zonder je codebase te kennen.</p>
-<p>Daarvoor is er de demo omgeving (toegang aanvragen, <em>zie einde blog</em>):</p>
+<p>Daarvoor is er de demo-omgeving (toegang aanvragen, <em>zie einde blog</em>):</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>ari<span style="color: #6E7681"> </span>demo-push
 </code></pre></div>
 
@@ -720,7 +747,7 @@ Nu kun je je workflow(s) lokaal runnen met:</p>
 <li>naar een browserdemo gepusht kan worden</li>
 </ul>
 <p>Bouw deze versie, speel met andere primitieven en zie hoe makkelijk je iets bouwt en kan delen met anderen!</p>
-<p>De volledige implementatie van deze basisworkflow staat in de demo-repository bij deze post. Daar vind je ook de helperfuncties voor de stabiliteitsberekening en de rapportgenerator.</p>
+<p>De volledige implementatie van deze basisworkflow staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij deze post</a>. Daar vind je ook de helperfuncties voor de stabiliteitsberekening en de rapportgenerator.</p>
 <p><strong>Vraag toegang aan via <a href="https://brugnaarai.nl">brugnaarai.nl</a> →</strong></p>
 <p>Voor een meer realistisch voorbeeld moeten we dieper ingaan op een aantal kernconcepten die deze blog te lang zouden maken. 
 Hier komen we in het volgende blog op terug!</p>
