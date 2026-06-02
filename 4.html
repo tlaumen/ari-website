@@ -254,11 +254,13 @@ Feedback van de gebruiker verwerken
 <p>Een <code>DataModel</code> beschrijft de data die door je workflow stroomt. Denk aan grondlagen, parameters, geometrie, rekenresultaten of rapporttekst.</p>
 <p>Een <code>Step</code> doet één ding. Bijvoorbeeld: vraag het grondprofiel uit, voer geometrie in, voer een berekening uit of genereer een rapport.
 De <code>Step</code> voert dit uit middels de <code>execute(self, ctx)</code> methode die je voor elke <code>Step</code> zelf moet definieren. </p>
-<p>Voor interactie met de gebruiker kent <code>ari-core</code> (op dit moment) vier primitieven (sterk geinspireerd door <a href="https://github.com/prompt-toolkit/python-prompt-toolkit">prompt-toolkit</a>):
-- <code>prompt(...)</code>: gebruiker krijgt een open vraag (tekst als antwoord)
-- <code>choice(...)</code>: gebruiker moet een optie kiezen
-- <code>confirm(...)</code>: gebruiker moet iets bevestigen
-- <code>ui(...)</code>: gebruiker krijgt een UI element te zien, al uitgewerkt bv. voor DocumentViewer of zelf geimplementeerd</p>
+<p>Voor interactie met de gebruiker kent <code>ari-core</code> (op dit moment) vier primitieven (sterk geinspireerd door <a href="https://github.com/prompt-toolkit/python-prompt-toolkit">prompt-toolkit</a>):</p>
+<ul>
+<li><code>prompt(...)</code>: gebruiker krijgt een open vraag (tekst als antwoord)</li>
+<li><code>choice(...)</code>: gebruiker moet een optie kiezen</li>
+<li><code>confirm(...)</code>: gebruiker moet iets bevestigen</li>
+<li><code>ui(...)</code>: gebruiker krijgt een UI element te zien, al uitgewerkt bv. voor DocumentViewer of zelf geimplementeerd</li>
+</ul>
 <p>Een <code>Segment</code> is de workflow zelf: een lijst van steps in de volgorde waarin ze uitgevoerd worden.</p>
 <p>Daarnaast kent ARI twee plekken om data op te slaan:</p>
 <ul>
