@@ -200,7 +200,7 @@
 <blockquote>
 <p>Een AI workflow is geen chatbot met voorgedefinieerde stappen. Het is een manier om vast te leggen waar code rekent, waar AI helpt en waar de ingenieur controle houdt.</p>
 </blockquote>
-<p>In de vorige posts hebben we het vooral gehad over principes:</p>
+<p>In de vorige posts hebben we het gehad over principes:</p>
 <ul>
 <li>zet AI niet in waar deterministische code beter is</li>
 <li>maak AI functies betrouwbaar met routing, context en evals</li>
@@ -208,20 +208,21 @@
 </ul>
 <p>Allemaal goed en wel, maar hoe bouw je zoiets nou daadwerkelijk?!</p>
 <p>In dit blog maken we een eerste workflow met <a href="https://github.com/tlaumen/ari">ari-core</a>. 
-We bouwen hem eerst lokaal en delen hem daarna via een webapp in <a href="https://brugnaarai.nl">de demo omgeving</a>.</p>
-<p>Als voorbeeld maken we een (uitgekleedde) stabiliteitsberekening. De berekening zelf wil je niet door een taalmodel laten verzinnen, die moet reproduceerbaar zijn. Maar een taalmodel kan wél helpen met een eerste rapporttekst.</p>
+We bouwen de workflow eerst lokaal en delen hem daarna in een webapp in <a href="https://brugnaarai.nl">de demo omgeving</a>.</p>
+<p>Als voorbeeld maken we een (uitgekleedde) stabiliteitsberekening.</p>
 <h2>Waarom het ARI framework?</h2>
-<p>Jacob Lauritzen van Legora vatte het goed samen:</p>
+<p>Jacob Lauritzen van Legora vatte het <a href="https://youtu.be/XNtkiQJ49Ps?si=BxqrHcPm2w-z_T_V">in een AI engineer</a> praatje goed samen:</p>
 <blockquote>
 <p>&ldquo;The ceiling of chat interfaces isn&rsquo;t a UX problem. It&rsquo;s a verification problem.&rdquo;</p>
 </blockquote>
 <p>In onze wereld is dit direct herkenbaar. Je kan aan een AI vragen: &ldquo;maak een stabiliteitsrapport&rdquo;. Dan krijg je waarschijnlijk een uiteenzetting die er goed uitziet. Maar hoe is de berekening gedaan? Welke parameters zijn gebruikt? En hoe kun jij eenvoudig controleren of dit klopt en bijsturen als dat niet zo is?</p>
-<p>Met een workflow maken we die stappen expliciet.</p>
-<p>Niet alles wordt AI. 
-De berekening blijft code en als startpunt mag AI helpen met tekstverwerking. 
-En waar er zaken geautomatiseerd of met AI worden uitgevoerd, zorgen de primitieven in <code>ari-core</code> ervoor dat de gebruiker op een intuitieve wijze invloed kan uitoefenen op de uitkomst. De controle blijft zo bij de ingenieur.</p>
+<p>Met een workflow maak je die stappen expliciet.</p>
+<p>De berekening blijft code en om mee te beginnen mag de LLM helpen met tekstverwerking. 
+Waar stappen geautomatiseerd of met AI worden uitgevoerd, zorgen de primitieven in <code>ari-core</code> ervoor dat je de gebruiker van een workflow op intuitieve wijze invloed kan uitoefenen op de gewenste uitkomst. De controle blijft zo bij de ingenieur.</p>
 <h2>Wat gaan we bouwen?</h2>
-<p>We bouwen een versimpelde workflow voor een stabiliteitsberekening:</p>
+<p>In deze blog gaan we een (versimpelde versie van een) stabiliteitsberekening maken om een conceptueel begrip op te bouwen. 
+In de volgende blog gaan we de workflow dan vervolgens &lsquo;productie klaar&rsquo; maken, een versie waar een ingenieur dan ook echt mee zou willen werken!</p>
+<p>De eerste versie van de workflow ziet er als volgt uit:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>Grondprofiel invoeren
         ↓
 Parameters invoeren
@@ -235,29 +236,56 @@ Conceptrapport schrijven
 Feedback van de gebruiker verwerken
 </code></pre></div>
 
-<p>De stabiliteitsberekening komt uit een open-source Pythonpakket voor stabiliteit. Zo blijft de tutorial bruikbaar voor iedereen, dus even geen D-Stability, Slope/W of andere commerciële software. De rapporttekst komt uit een AI-functie. De ingenieur geeft vervolgens feedback om de rapportage te verbeteren wat de LLM weer gebruikt.</p>
+<p>De stabiliteitsberekening komt uit een open-source Pythonpakket voor stabiliteit, <code>xslope</code>. 
+Zo blijft de tutorial bruikbaar voor iedereen, dus even geen D-Stability, Slope/W of andere commerciële software. 
+De rapporttekst komt uit een AI-functie. 
+De ingenieur geeft vervolgens feedback om de rapportage te verbeteren wat de LLM weer gebruikt.</p>
 <p>Aan het einde pushen we de workflow naar een demo-omgeving:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>ari<span style="color: #6E7681"> </span>demo-push
 </code></pre></div>
 
-<p>Daarmee draait dezelfde workflow in een webapp. Je collega hoeft geen Python, <code>uv</code> of repository te kennen. Hij opent de link, vult de invoer in, draait de berekening en beoordeelt het rapport.</p>
+<p>Daarmee draait dezelfde workflow in een webapp, lekker makkelijk om te delen.</p>
 <h2>Project opzetten</h2>
-<p>ARI gebruikt <code>uv</code> als package manager. Een nieuw project aanmaken doe je met:</p>
+<p>ARI gebruikt <code>uv</code> als package manager. 
+Allereerst installeren we de benodigde python pakketten:</p>
+<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv init --bare &lt;your app name&gt;
+uv add ari-core xslope tabulate openai anthropic
+</code></pre></div>
+
+<p>Een nieuw project aanmaken met ari doe je als volgt:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>ari<span style="color: #6E7681"> </span>new
 </code></pre></div>
 
-<p>Voor deze demo gebruiken we naast ARI ook <code>xslope</code> voor de stabiliteitsberekening:</p>
-<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>add<span style="color: #6E7681"> </span>ari-core<span style="color: #6E7681"> </span>xslope<span style="color: #6E7681"> </span>tabulate<span style="color: #6E7681"> </span>openai<span style="color: #6E7681"> </span>anthropic
-</code></pre></div>
-
-<p>Daarna werk je verder in <code>workflow.py</code>.</p>
-<p>Een AI coding agent kan hier goed bij helpen. 
-ARI projecten bevatten een <code>LLM_GUIDE.md</code>, zodat een agent de structuur van het project begrijpt en je kan ondersteunen.</p>
+<p>Dit creëert de volgende structuur:</p>
+<p><code>text
+   ari-project/
+   ├── .env.example
+   ├── LLM_GUIDE.md
+   ├── README.md
+   ├── main.py
+   ├── workflow.py
+   │
+   ├── steps/
+   │   ├── __init__.py
+   │   └── example_step.py
+   │
+   └── docs/
+       ├ ...</code></p>
+<p>Van het raamwerk opgezet bevat de volgende zaken:</p>
+<ul>
+<li><code>main.py</code>: runt uiteindelijk je app</li>
+<li><code>workflow.py</code>: verzameld al je workflow stappen en groepeerd ze </li>
+<li><code>steps/</code>: bevat alle stappen voor de workflows</li>
+<li><code>docs/</code>: alle documentatie hoe <code>ari-core</code> te gebruiken</li>
+</ul>
+<p>Ook bevat het raamwerk een <code>README.md</code> voor jou als developer en een <code>LLM_GUIDE.md</code>, zodat je AI coding agent de structuur van het project begrijpt en je kan ondersteunen.</p>
+<p>Vanaf nu gaan we zo goed als uitsluitend aan het werk in <code>steps/</code>, de rest staat al goed ingesteld..</p>
 <h2>De bouwstenen</h2>
 <p>Een ARI workflow bestaat uit drie simpele onderdelen.</p>
 <p>Een <code>DataModel</code> beschrijft de data die door je workflow stroomt. Denk aan grondlagen, parameters, geometrie, rekenresultaten of rapporttekst.</p>
 <p>Een <code>Step</code> doet één ding. Bijvoorbeeld: vraag het grondprofiel uit, voer geometrie in, voer een berekening uit of genereer een rapport.
-De <code>Step</code> voert dit uit via de <code>execute(self, ctx)</code> methode die je voor elke <code>Step</code> zelf moet definiëren. </p>
+De <code>Step</code> voert dit uit via de <code>execute(self, ctx)</code> methode die je voor elke <code>Step</code> zelf moet definiëren. 
+Hierin kun je een gebruiker vragen om input, LLM call doen, een rekenpakket runnen, of een combinatie van deze dingen. Gewoon in python definiëren wat jij wil doen.</p>
 <p>Voor interactie met de gebruiker kent <code>ari-core</code> op dit moment vier primitieven, sterk geïnspireerd door <a href="https://github.com/prompt-toolkit/python-prompt-toolkit">prompt-toolkit</a>:</p>
 <ul>
 <li><code>prompt(...)</code>: gebruiker krijgt een open vraag (tekst als antwoord)</li>
@@ -265,11 +293,11 @@ De <code>Step</code> voert dit uit via de <code>execute(self, ctx)</code> method
 <li><code>confirm(...)</code>: gebruiker moet iets bevestigen</li>
 <li><code>ui(...)</code>: gebruiker krijgt een UI-element te zien, bijvoorbeeld een <code>DocumentViewer</code> of een zelf geïmplementeerde component</li>
 </ul>
-<p>Een <code>Segment</code> is de workflow zelf: een lijst van steps in de volgorde waarin ze uitgevoerd worden.</p>
+<p>Een <code>Segment</code> is vervolgens een workflow: een lijst van steps in de volgorde waarin ze uitgevoerd worden.</p>
 <p>Daarnaast kent ARI twee plekken om data op te slaan:</p>
 <ul>
-<li><code>Table.PROJECT</code>: data die bij het project hoort en bewaard moet blijven</li>
-<li><code>Table.WORKFLOW</code>: tijdelijke data binnen één berekening</li>
+<li><code>Table.WORKFLOW</code>: data voor één berekening, hier slaan we in deze blog alles in op!</li>
+<li><code>Table.PROJECT</code>: data integraal voor het project, hier komen we in de volgende blog op terug</li>
 </ul>
 <h1>Deel 1 — Een eerste stabiliteitsworkflow</h1>
 <p>We beginnen bewust eenvoudig. Aan het eind van dit blog heb je nog niet de workflow zoals je hem als ingenieur uiteindelijk zou willen gebruiken, maar je hebt wel de belangrijkste concepten geleerd.
@@ -345,14 +373,14 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 </code></pre></div>
 
 <h2>Stap 2 — Parameters invoeren</h2>
-<p>Vervolgens moeten we de materiaalparameters opgeven per grondsoort. In een projectcontext haal je dit bijvoorbeeld uit een uitgangspuntennotitie. Voor een enkele berekening kan de ingenieur zelf een inschatting geven op basis van grondonderzoek, historische data en engineering judgement.</p>
+<p>Vervolgens moeten we de materiaalparameters opgeven per grondsoort. In een projectcontext haal je dit bijvoorbeeld met een LLM uit een uitgangspuntennotitie. Voor een enkele berekening kan de ingenieur zelf een inschatting geven op basis van grondonderzoek, historische data en engineering judgement.</p>
 <p>Voor het uitrekenen van de stabiliteit rekenen we met het Mohr-Coulomb sterkte model. De parameters zijn dan:</p>
 <ul>
 <li>volumiek gewicht</li>
 <li>cohesie</li>
 <li>hoek van inwendige wrijving</li>
 </ul>
-<p>In de callflow heeft deze step <code>grondprofiel</code> als input nodig. We moeten immers weten welke grondsoorten er gedefinieerd zijn. De output is <code>materiaal_parameters</code>; die bewaren we in <code>Table.PROJECT</code>, omdat materiaalparameters projectuitgangspunten zijn.</p>
+<p>Deze step <code>grondprofiel</code> (product van de vorige stap) als input nodig. We moeten immers weten welke grondsoorten er gedefinieerd zijn. De output zijn de <code>materiaal_parameters</code>.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
 
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
@@ -375,7 +403,7 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 <span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">VoerParametersInStep</span><span style="color: #E6EDF3">(Step):</span>
     <span style="color: #E6EDF3">name</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #A5D6FF">&quot;voer_parameters_in&quot;</span>
     <span style="color: #E6EDF3">requires</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Grondprofiel)]</span>
-    <span style="color: #E6EDF3">produces</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT)]</span>
+    <span style="color: #E6EDF3">produces</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW)]</span>
 
     <span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">execute</span><span style="color: #E6EDF3">(self,</span> <span style="color: #E6EDF3">ctx:</span> <span style="color: #E6EDF3">StepContext)</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #79C0FF">None</span><span style="color: #E6EDF3">:</span>
         <span style="color: #E6EDF3">grondprofiel:</span> <span style="color: #E6EDF3">Grondprofiel</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">]</span>
@@ -398,14 +426,15 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 </code></pre></div>
 
 <h2>Stap 3 — Geometrie invoeren</h2>
-<p>Vervolgens is de geometrische data nodig. In de praktijk is het waarschijnlijker dat we dit:</p>
+<p>Vervolgens is de geometrische data nodig. In de praktijk verkrijgen we de data meestal:</p>
 <ul>
 <li>met een API uit ACC halen</li>
 <li>uit een plaatje abstraheren middels AI</li>
 <li>uit een gestandaardiseerde spreadsheet inlezen</li>
 <li>zelf tekenen, bijvoorbeeld bij een stabiliteitsmaatregel in het dijkontwerp</li>
 </ul>
-<p>Om de demo echter simpel te houden, voeren we de geometrie hier even in als puntenlijst via een <code>prompt(...)</code> en zetten die daarna om naar workflowdata.</p>
+<p>Om de demo echter simpel te houden, voeren we de geometrie voor nu even in als puntenlijst via een <code>prompt(...)</code> en zetten die daarna om naar workflowdata. 
+Mochten we echter een van deze aanpassingen willen maken, is dit voor het bouwen van de workflow slechts een minimale aanpassing!</p>
 <p>De helper <code>parse_geometriepunten(...)</code> houdt de string-parsing buiten de step-logica. De volledige helper staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij dit artikel</a>.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
 
@@ -425,15 +454,6 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
     <span style="color: #E6EDF3">punten:</span> <span style="color: #E6EDF3">list[GeometriePunt]</span>
 
 
-<span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">parse_geometriepunten</span><span style="color: #E6EDF3">(value:</span> <span style="color: #E6EDF3">object)</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #E6EDF3">list[GeometriePunt]:</span>
-    <span style="color: #E6EDF3">punten</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[]</span>
-    <span style="color: #FF7B72">for</span> <span style="color: #E6EDF3">paar</span> <span style="color: #FF7B72; font-weight: bold">in</span> <span style="color: #E6EDF3">str(value)</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">split(</span><span style="color: #A5D6FF">&quot;;&quot;</span><span style="color: #E6EDF3">):</span>
-        <span style="color: #E6EDF3">x,</span> <span style="color: #E6EDF3">z</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">paar</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">split(</span><span style="color: #A5D6FF">&quot;,&quot;</span><span style="color: #E6EDF3">)</span>
-        <span style="color: #E6EDF3">punten</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">append(GeometriePunt(x</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">as_float(x),</span> <span style="color: #E6EDF3">z</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">as_float(z)))</span>
-
-    <span style="color: #FF7B72">return</span> <span style="color: #E6EDF3">sorted(punten,</span> <span style="color: #E6EDF3">key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #FF7B72">lambda</span> <span style="color: #E6EDF3">p:</span> <span style="color: #E6EDF3">p</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">x)</span>
-
-
 <span style="color: #FF7B72">class</span><span style="color: #6E7681"> </span><span style="color: #F0883E; font-weight: bold">LaadGeometrieStep</span><span style="color: #E6EDF3">(Step):</span>
     <span style="color: #E6EDF3">name</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #A5D6FF">&quot;laad_geometrie&quot;</span>
     <span style="color: #E6EDF3">requires</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[]</span>
@@ -451,9 +471,10 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 </code></pre></div>
 
 <h2>Stap 4 — Stabiliteitsberekening uitvoeren</h2>
-<p>We nemen aan dat we er geen constructies, maaiveldbelastingen of andere externe belastingen zijn. Daarmee kunnen we nu een simpele stabiliteitsberekening maken.</p>
-<p>De workflow gebruikt het grondprofiel, de materiaalparameters en de geometrie als input voor een open-source Pythonpakket dat de stabiliteit berekent. Dit is onconventioneel, maar betekent wel dat ook mensen zonder geïnstalleerde geotechnische software deze tutorial mee kunnen doen.</p>
-<p>De uitkomst bestaat hier uit:</p>
+<p>We nemen aan dat er geen constructies, maaiveldbelastingen of andere externe belastingen zijn. Dan hebben we nu alle gegevens om een simpele stabiliteitsberekening te maken.
+https://www.youtube.com/watch?v=XNtkiQJ49Ps
+De workflow gebruikt het grondprofiel, de materiaalparameters en de geometrie als input voor het pythonpakket dat de stabiliteit berekent.</p>
+<p>De uitkomst uit de berekening is:</p>
 <ul>
 <li>veiligheidsfactor</li>
 <li>middelpunt en straal van de maatgevende glijcirkel</li>
@@ -466,7 +487,7 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">ui</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Requirement,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
 
-<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.xslope_engine</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">build_slope_data,</span> <span style="color: #E6EDF3">run_analysis</span>
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">.helpers.xslope_engine</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">build_slope_data,</span> <span style="color: #E6EDF3">run_analysis</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.laad_geometrie</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Geometrie</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.voer_grondprofiel_in</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Grondprofiel</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.voer_parameters_in</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">MateriaalParameters</span>
@@ -483,7 +504,7 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
     <span style="color: #E6EDF3">name</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #A5D6FF">&quot;bereken_stabiliteit&quot;</span>
     <span style="color: #E6EDF3">requires</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Grondprofiel),</span>
-        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">MateriaalParameters),</span>
+        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">MateriaalParameters),</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;geometrie&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Geometrie),</span>
     <span style="color: #E6EDF3">]</span>
     <span style="color: #E6EDF3">produces</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;stabiliteitsresultaat&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW)]</span>
@@ -513,25 +534,27 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
 </code></pre></div>
 
 <h2>Stap 5 — Conceptrapport genereren</h2>
-<p>Met de berekening gemaakt kunnen we er een rapport van schrijven, hoewel we normaal natuurlijk veel meer berekeningen zouden maken om gevoel te krijgen voor het probleem.</p>
-<p>Het rapporteren is nu overzichtelijk probleem, want we:</p>
+<p>Met de berekening gemaakt kunnen we het rapport schrijven.
+Het rapporteren is met deze opzet ook een overzichtelijk probleem, want we:</p>
 <ul>
 <li>hebben alle data gestructureerd opgeslagen</li>
 <li>zijn expliciet betrokken in de aannames voor de berekening</li>
 <li>hebben een simpele interface om een AI-functie aan te roepen die het rapport voor ons schrijft</li>
 </ul>
-<p>We hoeven ons enkel nog druk te maken dat we de <a href="https://ari.engineer/blog/2">context van het model goed benutten</a>.</p>
+<p>We hoeven ons dus enkel nog druk te maken dat de <a href="https://ari.engineer/blog/2">context van het model goed benut wordt</a> zodat de LLM een mooi rapport voor ons maakt!</p>
 <p>De helper <code>genereer_rapport(...)</code> maakt de rapporttekst in markdown op basis van de gestructureerde invoer. De volledige implementatie staat in de <a href="https://github.com/tlaumen/ari-blog-4">repository bij dit artikel</a>. Later gebruiken we dezelfde helper opnieuw met feedbackpunten.</p>
-<p>Met <code>ui(DocumentViewer(...))</code> tonen we het markdownrapport in de browser. Dat werkt dus niet alleen lokaal, maar ook in de demo-omgeving.</p>
-<p>Let wel op: je moet zelf je API key van de modelprovider in de <code>.env</code> laden. Hiervoor zijn een paar API&rsquo;s van modelproviders toegevoegd aan de <code>genereer_rapport(...)</code> functie. Pas echter op dat je deze key niet naar de demo-omgeving pushed.</p>
+<p>Met <code>ui(DocumentViewer(...))</code> tonen we het markdownrapport in de browser.</p>
+<p>Let wel op: je moet zelf je API key van de modelprovider in de <code>.env</code> laden. 
+Hiervoor zijn een paar API&rsquo;s van modelproviders toegevoegd aan de <code>genereer_rapport(...)</code> functie. 
+Pas echter op dat je deze key niet naar de demo-omgeving pushed!</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
 
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.models</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DataModel,</span> <span style="color: #E6EDF3">Table</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">ui</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Requirement,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
 
-<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.document_viewer</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DocumentViewer</span>
-<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.rapport_generator</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">genereer_rapport</span>
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">.helpers.document_viewer</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DocumentViewer</span>
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">.helpers.rapport_generator</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">genereer_rapport</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.bereken_stabiliteit</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">StabiliteitsResultaat</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.laad_geometrie</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Geometrie</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.voer_grondprofiel_in</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Grondprofiel</span>
@@ -547,7 +570,7 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
     <span style="color: #E6EDF3">name</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #A5D6FF">&quot;genereer_rapport&quot;</span>
     <span style="color: #E6EDF3">requires</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Grondprofiel),</span>
-        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">MateriaalParameters),</span>
+        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">MateriaalParameters),</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;geometrie&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Geometrie),</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;stabiliteitsresultaat&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">StabiliteitsResultaat),</span>
     <span style="color: #E6EDF3">]</span>
@@ -577,15 +600,9 @@ NAP +1.0 m tot NAP -2.0 m: vaste zandlaag
         <span style="color: #E6EDF3">ctx[</span><span style="color: #A5D6FF">&quot;concept_rapport&quot;</span><span style="color: #E6EDF3">]</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">concept_rapport</span>
 </code></pre></div>
 
-<p>De volgorde is belangrijk:</p>
-<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>eerst rekenen
-daarna schrijven
-daarna controleren
-</code></pre></div>
-
 <h2>Stap 6 — Feedback vragen en geaccepteerde versie opslaan</h2>
 <p>De conceptrapportage bevat zonder twijfel tekortkomingen. De ingenieur moet dus feedback kunnen geven.</p>
-<p>In Stap 5 is het conceptrapport al getoond met <code>DocumentViewer</code>. In deze step vragen we de gebruiker één of meer pointers via <code>prompt(...)</code>. Met die pointers draaien we dezelfde rapportfunctie opnieuw. De aangepaste versie tonen we weer met <code>DocumentViewer</code>.</p>
+<p>In Stap 5 is het conceptrapport al getoond met <code>DocumentViewer</code>. In deze step vragen we de gebruiker één of meer pointers via <code>prompt(...)</code>. Die pointers geven we mee aan de LLM om een nieuw rapport te maken met de <code>genereer_rapport</code> functie. De aangepaste versie tonen we weer met <code>DocumentViewer</code>.</p>
 <p>Later kan dit een rijkere UI-component worden waarbij je, zoals in ChatGPT, een stuk tekst selecteert en prompt wat je daarmee wilt.</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">__future__</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">annotations</span>
 
@@ -593,8 +610,8 @@ daarna controleren
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.prompting</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">confirm,</span> <span style="color: #E6EDF3">prompt,</span> <span style="color: #E6EDF3">ui</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.step</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Product,</span> <span style="color: #E6EDF3">Requirement,</span> <span style="color: #E6EDF3">Step,</span> <span style="color: #E6EDF3">StepContext</span>
 
-<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.document_viewer</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DocumentViewer</span>
-<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">helpers.rapport_generator</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">genereer_rapport</span>
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">.helpers.document_viewer</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">DocumentViewer</span>
+<span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">.helpers.rapport_generator</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">genereer_rapport</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.bereken_stabiliteit</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">StabiliteitsResultaat</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.laad_geometrie</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Geometrie</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">steps.voer_grondprofiel_in</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Grondprofiel</span>
@@ -627,13 +644,13 @@ daarna controleren
     <span style="color: #E6EDF3">name</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #A5D6FF">&quot;vraag_rapport_feedback&quot;</span>
     <span style="color: #E6EDF3">requires</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;grondprofiel&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Grondprofiel),</span>
-        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">MateriaalParameters),</span>
+        <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;materiaal_parameters&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">MateriaalParameters),</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;geometrie&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Geometrie),</span>
         <span style="color: #E6EDF3">Requirement(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;stabiliteitsresultaat&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">source</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW,</span> <span style="color: #E6EDF3">model</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">StabiliteitsResultaat),</span>
     <span style="color: #E6EDF3">]</span>
     <span style="color: #E6EDF3">produces</span> <span style="color: #FF7B72; font-weight: bold">=</span> <span style="color: #E6EDF3">[</span>
-        <span style="color: #E6EDF3">Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;rapport_feedback&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT),</span>
-        <span style="color: #E6EDF3">Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;geaccepteerd_rapport&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">PROJECT),</span>
+        <span style="color: #E6EDF3">Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;rapport_feedback&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW),</span>
+        <span style="color: #E6EDF3">Product(key</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #A5D6FF">&quot;geaccepteerd_rapport&quot;</span><span style="color: #E6EDF3">,</span> <span style="color: #E6EDF3">dest</span><span style="color: #FF7B72; font-weight: bold">=</span><span style="color: #E6EDF3">Table</span><span style="color: #FF7B72; font-weight: bold">.</span><span style="color: #E6EDF3">WORKFLOW),</span>
     <span style="color: #E6EDF3">]</span>
 
     <span style="color: #FF7B72">def</span><span style="color: #6E7681"> </span><span style="color: #D2A8FF; font-weight: bold">execute</span><span style="color: #E6EDF3">(self,</span> <span style="color: #E6EDF3">ctx:</span> <span style="color: #E6EDF3">StepContext)</span> <span style="color: #FF7B72; font-weight: bold">-&gt;</span> <span style="color: #79C0FF">None</span><span style="color: #E6EDF3">:</span>
@@ -659,9 +676,10 @@ daarna controleren
 </code></pre></div>
 
 <h2>Segment registreren</h2>
-<p>Nu hebben we zes <code>Step</code>-klassen gedefinieerd. Deze komen samen in een <code>Segment</code> en een <code>SegmentRegistry</code>.
+<p>Nu hebben we zes <code>Step</code>-klassen gedefinieerd. Deze komen samen in een <code>Segment</code> in de <code>SegmentRegistry</code>.
 Om de implementatie voor de tutorial simpel te houden maken we er een <code>Segment</code> van, hoewel we dit in de praktijk waarschijnlijk overal waar er meerdere opties zijn voor de input, zoals ook benoemd in dit blog, zouden kunnen/willen opknippen.
-Een <code>Segment</code> hoort in een <code>SegmentRegistry</code> waarvan elke applicatie er een heeft. Ook geven we het een naam en beschrijving mee zodat het eenvoudig te herkennen is wat het doet.</p>
+Ook geven we het <code>Segment</code> een naam en beschrijving mee zodat het eenvoudig te herkennen is wat het doet.</p>
+<p>De volgende stappen zijn inmiddels gebouwd:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>VoerGrondprofielIn
 VoerParametersIn
 LaadGeometrie
@@ -670,7 +688,7 @@ GenereerRapport
 VraagRapportFeedback
 </code></pre></div>
 
-<p>Die registreren we als één segment:</p>
+<p>Die registreren we als één segment in <code>workflow.py</code>:</p>
 <div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.registry</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">SegmentRegistry</span>
 <span style="color: #FF7B72">from</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">ari_core.workflow.segment</span><span style="color: #6E7681"> </span><span style="color: #FF7B72">import</span> <span style="color: #E6EDF3">Segment</span>
 
@@ -701,9 +719,9 @@ VraagRapportFeedback
 <span style="color: #E6EDF3">)</span>
 </code></pre></div>
 
-<p>Met de <code>SegmentRegistry</code> gedefinieerd kunnen we onze <code>ari-core</code> applicatie runnen. Deze registry wordt in <code>main.py</code> ingeladen. Zie je eigen repo, nadat je <code>uv run ari new</code> hebt gerund, of de <a href="https://github.com/tlaumen/ari-blog-4">repository van deze tutorial</a> voor meer informatie. 
-Nu kun je je workflow(s) lokaal runnen met:</p>
-<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>python<span style="color: #6E7681"> </span>main.py
+<p>Met de <code>SegmentRegistry</code> gedefinieerd kunnen we onze <code>ari-core</code> applicatie runnen. Deze registry wordt in <code>main.py</code> ingeladen.<br />
+Run je eigen workflow lokaal met:</p>
+<div class="codehilite" style="background: #0d1117"><pre style="line-height: 125%;"><span></span><code>uv<span style="color: #6E7681"> </span>run<span style="color: #6E7681"> </span>main.py
 </code></pre></div>
 
 <p>Dat is goed om te bouwen. Maar het wordt pas echt interessant als je de workflows met collega&rsquo;s kan delen.</p>
@@ -713,7 +731,7 @@ Nu kun je je workflow(s) lokaal runnen met:</p>
 
 <p>ARI publiceert de workflow naar een apart platform wat de web app host.</p>
 <h2>Je eerste workflow!</h2>
-<p>Dit was alles wat je nodig hebt om <code>ari-core</code> eens uit te proberen!</p>
+<p>Dit was alles wat je nodig hebt om <code>ari-core</code> uit te proberen!</p>
 <p>Je hebt een workflow die:</p>
 <ul>
 <li>gestructureerde invoer verzamelt</li>
