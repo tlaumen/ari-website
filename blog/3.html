@@ -1,202 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hoe krijg je je ingenieurs aan de AI</title>
-  <style>
-    :root {
-      --text-primary: #F0F0F0;
-      --text-bright:  #FFFFFF;
-      --deep-black:   #0A0A0A;
-      --glow-color:   rgba(240, 240, 240, 0.3);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Courier New', Courier, 'Lucida Console', Monaco, monospace;
-      background-color: var(--deep-black);
-      color: var(--text-primary);
-      min-height: 100vh;
-      line-height: 1.6;
-    }
-    .blog {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem 4rem;
-    }
-    .tag {
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-primary);
-      opacity: 0.45;
-      margin-bottom: 1.75rem;
-      display: block;
-    }
-    .tag::before { content: '// '; }
-    .blog-title {
-      font-size: clamp(1.4rem, 4vw, 2rem);
-      font-weight: 700;
-      line-height: 1.25;
-      color: var(--text-bright);
-      text-shadow: 0 0 10px var(--glow-color);
-      margin-bottom: 1rem;
-      letter-spacing: -0.01em;
-    }
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-      font-size: 12px;
-      opacity: 0.4;
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(240,240,240,0.08);
-      letter-spacing: 0.04em;
-    }
-    .meta-dot {
-      width: 3px;
-      height: 3px;
-      border-radius: 50%;
-      background: var(--text-primary);
-      opacity: 0.4;
-    }
-    /* ── Body content ── */
-    .blog-body { margin-top: 2rem; }
-    .blog-body p {
-      font-size: 0.95rem;
-      line-height: 1.8;
-      color: var(--text-primary);
-      opacity: 0.7;
-      margin-bottom: 1.25rem;
-    }
-    .blog-body h2 {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text-bright);
-      text-shadow: 0 0 8px rgba(240,240,240,0.2);
-      letter-spacing: 0.02em;
-      margin: 2rem 0 0.45rem;
-      counter-increment: section;
-    }
-    .blog-body h2::before {
-      content: '> 0' counter(section) '  ';
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      opacity: 0.25;
-    }
-    .blog-body h3 {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      opacity: 0.8;
-      margin: 1.5rem 0 0.4rem;
-      letter-spacing: 0.02em;
-    }
-    .blog-body hr {
-      border: none;
-      height: 1px;
-      background: rgba(240,240,240,0.06);
-      margin: 1.5rem 0;
-    }
-    .blog-body blockquote {
-      border-left: 1px solid rgba(240,240,240,0.2);
-      padding-left: 1rem;
-      margin: 1.25rem 0;
-      font-style: italic;
-      opacity: 0.6;
-    }
-    .blog-body a {
-      color: var(--text-primary);
-      opacity: 0.5;
-      text-decoration: none;
-      border-bottom: 1px solid rgba(240,240,240,0.2);
-      transition: opacity 0.2s;
-      font-size: 11px;
-      letter-spacing: 0.04em;
-      padding: 2px 6px;
-      border: 1px solid rgba(240,240,240,0.12);
-      border-radius: 2px;
-    }
-    .blog-body a::before { content: '↗ '; }
-    .blog-body a:hover { opacity: 0.8; }
-    .blog-body ul, .blog-body ol {
-      font-size: 0.9rem;
-      line-height: 1.8;
-      color: var(--text-primary);
-      opacity: 0.65;
-      padding-left: 1.5rem;
-      margin-bottom: 1.25rem;
-    }
-    .blog-body li {
-      display: list-item;
-      width: 100%;
-      margin-bottom: 0.3rem;
-    }
-    .blog-body code {
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.85rem;
-      background: rgba(240,240,240,0.05);
-      border: 1px solid rgba(240,240,240,0.1);
-      padding: 1px 6px;
-      border-radius: 2px;
-    }
-    .blog-body pre {
-      background: rgba(240,240,240,0.04);
-      border: 1px solid rgba(240,240,240,0.08);
-      border-radius: 2px;
-      padding: 1rem;
-      overflow-x: auto;
-      margin-bottom: 1.25rem;
-    }
-    .blog-body pre code {
-      border: none;
-      background: none;
-      padding: 0;
-      font-size: 0.85rem;
-    }
-    /* Pygments highlighted BAML blocks */
-    .blog-body .highlight {
-      border-radius: 2px;
-      margin-bottom: 1.25rem;
-      overflow-x: auto;
-    }
-    .blog-body .highlight pre {
-      border: none;
-      margin-bottom: 0;
-      font-size: 0.85rem;
-    }
-    .blog-body strong { color: var(--text-bright); font-weight: 700; }
-    .blog-body em { font-style: italic; opacity: 0.75; }
-    /* reset section counter */
-    .blog-body { counter-reset: section; }
-    /* footer */
-    .blog-footer {
-      font-size: 11px;
-      color: var(--text-primary);
-      opacity: 0.3;
-      padding-top: 1.5rem;
-      margin-top: 2rem;
-      border-top: 1px solid rgba(240,240,240,0.06);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-    .blog-footer::before { content: '// volgende: '; }
-    @media (max-width: 480px) {
-      .blog { padding: 2rem 1.25rem 3rem; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hoe krijg je je ingenieurs aan de AI – ARI.engineer</title>
+<meta name="description" content="Blog van ARI.engineer – AI met een bouwhelm op.">
+<meta name="theme-color" content="#111111">
+<link rel="stylesheet" href="/style.css">
 </head>
-<body>
-  <article class="blog">
+<body id="top">
 
-    <span class="tag">AI met een bouwhelm op</span>
-<h1 class="blog-title">Hoe krijg je je ingenieurs aan de AI</h1>
+<header class="site-header">
+  <div class="site-header__in">
+    <a href="/" aria-label="ARI, naar de startpagina">
+      <span class="ascii ascii--sm" aria-hidden="true"> █████╗ ██████╗ ██╗
+██╔══██╗██╔══██╗██║
+███████║██████╔╝██║
+██╔══██║██╔══██╗██║
+██║  ██║██║  ██║██║
+╚═╝  ╚═╝╚═╝  ╚═╝╚═╝</span>
+    </a>
+    <div class="switch" role="group" aria-label="Kies een dienst">
+      <a href="/ingenieur">Ingenieursdiensten</a>
+      <a href="/it">IT-diensten</a>
+    </div>
+    <a href="#contact" class="contact-link">Contact</a>
+  </div>
+</header>
 
-    <div class="meta"><span>Tom Laumen</span><span class="meta-dot"></span><span>26 mei 2026</span><span class="meta-dot"></span><span>4 min lezen</span></div>
-
-    <div class="blog-body">
+<main>
+<article class="article">
+  <div class="article__in">
+    <a href="/blog" class="back">← Alle blogs</a>
+    <span class="kicker article__series">AI MET EEN BOUWHELM OP</span>
+    <h1>Hoe krijg je je ingenieurs aan de AI</h1>
+    <p class="article__meta"><span>Tom Laumen</span><span><time datetime="2026-05-26">26 mei 2026</time></span><span>4 min lezen</span></p>
+    <div class="prose">
 <p>Dit blog is een liefdesbrief aan het ingenieurswerk, en waarom ons werk (nog) niet te vangen is in generieke AI-tools. </p>
 <p>Vrijwel elke keer als ik een generieke AI-tool (voor de civiele wereld) voorbij zie komen heb ik hetzelfde gevoel: dit sluit slecht aan op hoe ingenieurswerk daadwerkelijk werkt.
 Dat gevoel zie ik ook duidelijk terug binnen mijn netwerk. 
@@ -212,7 +51,7 @@ En deze generieke tools helpen je ook niet om toe te werken naar een succesvolle
 De technologie komt pas in beeld als helder is waar het tijd bespaart, fouten vermindert of een beter ontwerp oplevert.</p>
 <p>Niet elk onderdeel van het werkproces is van meet af aan geschikt voor AI, en dat hoeft ook niet. 
 Begin met de stappen waar AI goed controleerbaar is en de risico’s beperkt zijn, zodat de eerste ervaringen van gebruikers positief en voorspelbaar zijn. 
-<a href="https://ari.engineer/blog/1">Zoals ik eerder ook beschreef</a>.</p>
+<a href="/blog/1">Zoals ik eerder ook beschreef</a>.</p>
 <p>Wat je in de beginfase beter niet doet: AI laten redeneren over geotechnische parameters, veiligheidsklasse automatisch laten bepalen of interpretaties zonder menselijke verificatie laten goedkeuren. Niet omdat dat principieel onmogelijk is, maar omdat betrouwbaarheid op dat moment nog onvoldoende aantoonbaar is.</p>
 <hr />
 <h2>De CC/CD-loop: geleidelijke kalibratie op basis van gebruik</h2>
@@ -249,9 +88,29 @@ Of gebruik het als inspiratie voor je eigen implementatie.</p>
 <h2>Slotgedachte</h2>
 <p>Begin klein, verzamel data, start vandaag (!) en itereer je weg naar prettige, goed werkende AI-systemen.
 Met deze aanpak werk je op schaalbare en verantwoorde wijze aan betrouwbare AI-adoptie voor je ingenieurs!</p>
+    
     </div>
+    <nav class="pn" aria-label="Meer blogs"><a href="/blog/2" class="pn__prev"><small>← VORIGE</small><b>Betrouwbare &#x27;AI-functies&#x27;</b></a><a href="/blog/4" class="pn__next"><small>VOLGENDE →</small><b>Van terminal naar team: bouw je eerste AI workflow met ARI</b></a><a href="/blog" class="pn__all">← Alle blogs</a></nav>
+  </div>
+</article>
 
-    <p class="blog-footer">Waarom (alleen) chat niet werkt</p>
-  </article>
+<section id="contact" class="contact">
+  <div class="contact__in">
+    <h2>Vertel ons waar je tegenaan loopt.</h2>
+    <div class="contact__row">
+      <a href="mailto:tom@ari.engineer?subject=Kennismaking%20ARI.engineer" class="btn btn--accent">Plan een kennismaking</a>
+      <span class="contact__info"><a href="mailto:tom@ari.engineer">tom@ari.engineer</a> · <a href="tel:+31625240781">+31 6 25240781</a> · <a href="https://www.linkedin.com/company/ari-engineer/" target="_blank" rel="noopener" class="li-link" aria-label="LinkedIn"><svg class="linkedin-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg></a></span>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__in">
+    <span>© 2026 ARI.engineer</span>
+    <span>KvK 42037924 · BTW NL005448093B57</span>
+  </div>
+</footer>
+
 </body>
 </html>
